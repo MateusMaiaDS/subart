@@ -6,6 +6,8 @@ cv_matrix <- function(cv_element_,
                       p_,
                       i){
 
+     # LOADING LIBRARIES
+     library(dbarts)
      # Getting the data elements
      x_train <- cv_element_$train$x
      y_train <- cv_element_$train$y
@@ -27,9 +29,9 @@ cv_matrix <- function(cv_element_,
                                       fold = NULL)
      # Generating the BART model
      for(i_ in 1:mvn_dim_){
-          bart_models[[i_]] <- dbarts::bart(x.train = x_train,y.train = y_train[,i_],
+          bart_models[[i_]] <- bart(x.train = x_train,y.train = y_train[,i_],
                                              x.test = x_test,ntree = n_tree_,
-                                             ndpost = 2000,nskip = 500)
+                                             ndpost = 2000,nskip = 500,keepevery = TRUE)
 
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
@@ -63,7 +65,7 @@ cv_matrix <- function(cv_element_,
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
                                                                      value = pi_coverage(y = y_test[,i_],
                                                                                          y_hat_post = bart_models[[i_]]$yhat.test,
-                                                                                         sd_post = bart_models[[i_]]$,
+                                                                                         sd_post = bart_models[[i_]]$sigma,
                                                                                          prob = 0.5,n_mcmc_replications = 100),
                                                                      model  = "BART", fold = i,
                                                                      mvn_dim = i_))

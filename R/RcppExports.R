@@ -2,34 +2,34 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 makeSigma <- function(sigma, d) {
-    .Call('_mvnbart5_makeSigma', PACKAGE = 'mvnbart5', sigma, d)
+    .Call('_mvnbart6_makeSigma', PACKAGE = 'mvnbart6', sigma, d)
 }
 
 makeSigmaInv <- function(Sigma) {
-    .Call('_mvnbart5_makeSigmaInv', PACKAGE = 'mvnbart5', Sigma)
+    .Call('_mvnbart6_makeSigmaInv', PACKAGE = 'mvnbart6', Sigma)
 }
 
 wishart_loglikelihood <- function(X, Sigma, nu) {
-    .Call('_mvnbart5_wishart_loglikelihood', PACKAGE = 'mvnbart5', X, Sigma, nu)
+    .Call('_mvnbart6_wishart_loglikelihood', PACKAGE = 'mvnbart6', X, Sigma, nu)
 }
 
 iwishart_loglikelihood <- function(X, Sigma, nu) {
-    .Call('_mvnbart5_iwishart_loglikelihood', PACKAGE = 'mvnbart5', X, Sigma, nu)
+    .Call('_mvnbart6_iwishart_loglikelihood', PACKAGE = 'mvnbart6', X, Sigma, nu)
 }
 
 log_dmvn <- function(x, Sigma) {
-    .Call('_mvnbart5_log_dmvn', PACKAGE = 'mvnbart5', x, Sigma)
+    .Call('_mvnbart6_log_dmvn', PACKAGE = 'mvnbart6', x, Sigma)
 }
 
 cppbart <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, sv_matrix) {
-    .Call('_mvnbart5_cppbart', PACKAGE = 'mvnbart5', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, sv_matrix)
+    .Call('_mvnbart6_cppbart', PACKAGE = 'mvnbart6', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, sv_matrix)
 }
 
 truncated_sample <- function(mu, left, sigma_) {
-    .Call('_mvnbart5_truncated_sample', PACKAGE = 'mvnbart5', mu, left, sigma_)
+    .Call('_mvnbart6_truncated_sample', PACKAGE = 'mvnbart6', mu, left, sigma_)
 }
 
 cppbart_CLASS <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix) {
-    .Call('_mvnbart5_cppbart_CLASS', PACKAGE = 'mvnbart5', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix)
+    .Call('_mvnbart6_cppbart_CLASS', PACKAGE = 'mvnbart6', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix)
 }
 

@@ -1,5 +1,5 @@
 #' Multivariate Normal Bayesian Additive Regression trees.
-#' @useDynLib mvnbart5
+#' @useDynLib mvnbart6
 #' @importFrom Rcpp sourceCpp
 #'
 #' @description

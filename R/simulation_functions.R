@@ -53,7 +53,7 @@ sim_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 
      # Adding the only if p=3
      if(mvn_dim==3){
-          y3 <- 15* x[,5]
+          y3 <- 15* x[,5] - exp(-0.5*x[,2])
      }
 
      y <- matrix(0,nrow = n,ncol = mvn_dim)
@@ -229,7 +229,7 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 
      # Adding the only if p=3
      if(mvn_dim==3){
-          z3 <- 10* x[,5] - exp(-0.5*x[,1])
+          z3 <- 10* x[,5] - exp(-0.5*x[,2])
      }
 
      y <- matrix(0,nrow = n,ncol = mvn_dim)
