@@ -1,6 +1,6 @@
 # Creating the function to be used in paralllel and generate the results
 cv_matrix <- function(cv_element_,
-                      ntree_,
+                      n_tree_,
                       mvn_dim_,
                       n_,
                       p_,
@@ -28,8 +28,10 @@ cv_matrix <- function(cv_element_,
      # Generating the BART model
      for(i_ in 1:mvn_dim_){
           bart_models[[i_]] <- dbarts::bart(x.train = x_train,y.train = y_train[,i_],
-                                             x.test = x_test,ntree = ntree_,
+                                             x.test = x_test,ntree = n_tree_,
                                              ndpost = 2000,nskip = 500)
+
+
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
                                                                      value =  rmse(x = bart_models[[i_]]$yhat.train.mean,
                                                                                    y = y_train[,i_]),
@@ -61,7 +63,7 @@ cv_matrix <- function(cv_element_,
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
                                                                      value = pi_coverage(y = y_test[,i_],
                                                                                          y_hat_post = bart_models[[i_]]$yhat.test,
-                                                                                         sd_post = bart_models[[i_]]$sigma,
+                                                                                         sd_post = bart_models[[i_]]$,
                                                                                          prob = 0.5,n_mcmc_replications = 100),
                                                                      model  = "BART", fold = i,
                                                                      mvn_dim = i_))
@@ -95,7 +97,7 @@ cv_matrix <- function(cv_element_,
 
      # Doing the same for the MVN-BART
      mvbart_mod <- mvnbart(x_train = x_train,y_mat = y_train,x_test = x_test,
-                           n_tree = ntree_,n_mcmc = 2500,n_burn = 500,df = 10)
+                           n_tree = n_tree_,n_mcmc = 2500,n_burn = 500,df = 10)
 
      # Generating the BART model
      for(i_ in 1:mvn_dim_){

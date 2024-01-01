@@ -15,7 +15,7 @@ for(p in p_){
                    cv_[[rep]]$train <- sim_class_mvn_friedman2(n = n,p = p,mvn_dim = mvn_dim)
                    cv_[[rep]]$test <- sim_class_mvn_friedman2(n = n,p = p,mvn_dim = mvn_dim)
               }
-              saveRDS(cv_,file = paste0("inst/cv_data/classification/friedman2_n_",n,"_p_",p,"_d_",mvn_dim,".Rds"))
+              # saveRDS(cv_,file = paste0("inst/cv_data/classification/friedman2_n_",n,"_p_",p,"_d_",mvn_dim,".Rds"))
          }
      }
 }
