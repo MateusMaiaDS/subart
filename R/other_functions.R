@@ -31,40 +31,46 @@ crps <- function(y,means,sds){
 }
 
 
-pi_coverage <- function(y, y_hat_post, sd_post,only_post = FALSE, prob = 0.5,n_mcmc_replications = 1000){
+pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications = 1000){
 
         # Getting the number of posterior samples and columns, respect.
-        np <- nrow(y_hat_post)
-        nobs <- ncol(y_hat_post)
+        if(!is.null(dim(y))){
+                stop("Insert a vector for y.")
+        }
 
-        full_post_draw <- list()
+        # Checking the shape of the posterior samples inserted there
+        if(nrow(y_hat_post)!= length(y)){
+                stop("Insert the posterior samples as a matrix of n \\times mcmc shape.")
+        }
 
-        # Setting the progress bar
-        progress_bar <- utils::txtProgressBar(
-                min = 1, max = n_mcmc_replications,
-                style = 3, width = 50 )
+        # Setting the size of n_test
+        n_test <- length(y)
 
-        # Only post matrix
-        if(only_post){
-                post_draw <- y_hat_post
-        } else {
-                for(i in 1:n_mcmc_replications){
-                        utils::setTxtProgressBar(progress_bar, i)
+        # Settina all predictions samples matrix
+        all_predictions_samples = matrix(NA, nrow = n_test, ncol = n_mcmc_replications)
 
-                        full_post_draw[[i]] <-(y_hat_post + replicate(sd_post,n = nobs)*matrix(stats::rnorm(n = np*nobs),
-                                                                                               nrow = np))
+        for(i in 1:n_test){
+                y_hats <- y_hat_post[i,]
+                n_gs <- sample(1:nrow(y_hat_post),size = n_mcmc_replications,replace = TRUE)
+
+                for(k in 1:n_mcmc_replications){
+                        y_hat_draw = y_hats[n_gs[k]]
+                        sig_draw = sd_post[n_gs[k]]
+                        all_predictions_samples[i,k] = stats::rnorm(n = 1,mean = y_hat_draw,sd = sig_draw)
                 }
         }
 
-        if(!only_post){
-                post_draw<- do.call(rbind,full_post_draw)
+        # Calculating the quantiles for the lower and upper quantiles we have
+        pi_lower_bd <- numeric(n_test)
+        pi_upper_bd <- numeric(n_test)
+
+        for(i in 1:n_test){
+                pi_lower_bd[i] <- quantile(c(all_predictions_samples[i,]), (1-prob)/2)
+                pi_upper_bd[i] <- quantile(c(all_predictions_samples[i,]), (1+prob)/2)
         }
 
-        # CI boundaries
-        low_ci <- apply(post_draw,2,function(x){stats::quantile(x,probs = prob/2)})
-        up_ci <- apply(post_draw,2,function(x){stats::quantile(x,probs = 1-prob/2)})
 
-        pi_cov <- sum((y<=up_ci) & (y>=low_ci))/length(y)
+        pi_cov <- sum((y<=pi_upper_bd) & (y>=pi_lower_bd))/n_test
 
         return(pi_cov)
 }
@@ -159,44 +165,6 @@ crps <- function(y,means,sds){
      return(list(CRPS = mean(crps_vector), crps = crps_vector))
 }
 
-
-pi_coverage <- function(y, y_hat_post, sd_post,only_post = FALSE, prob = 0.5,n_mcmc_replications = 1000){
-
-     # Getting the number of posterior samples and columns, respect.
-     np <- nrow(y_hat_post)
-     nobs <- ncol(y_hat_post)
-
-     full_post_draw <- list()
-
-     # Setting the progress bar
-     progress_bar <- utils::txtProgressBar(
-          min = 1, max = n_mcmc_replications,
-          style = 3, width = 50 )
-
-     # Only post matrix
-     if(only_post){
-          post_draw <- y_hat_post
-     } else {
-          for(i in 1:n_mcmc_replications){
-               utils::setTxtProgressBar(progress_bar, i)
-
-               full_post_draw[[i]] <-(y_hat_post + replicate(sd_post,n = nobs)*matrix(stats::rnorm(n = np*nobs),
-                                                                                      nrow = np))
-          }
-     }
-
-     if(!only_post){
-          post_draw<- do.call(rbind,full_post_draw)
-     }
-
-     # CI boundaries
-     low_ci <- apply(post_draw,2,function(x){stats::quantile(x,probs = prob/2)})
-     up_ci <- apply(post_draw,2,function(x){stats::quantile(x,probs = 1-prob/2)})
-
-     pi_cov <- sum((y<=up_ci) & (y>=low_ci))/length(y)
-
-     return(pi_cov)
-}
 
 # Calculating a Frequentist confidence interval covarage
 ci_coverage <- function(y_,

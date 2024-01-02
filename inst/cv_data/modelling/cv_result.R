@@ -3,10 +3,10 @@ rm(list=ls())
 library(doParallel)
 devtools::load_all()
 set.seed(42)
-n_ <- 1000
+n_ <- 250
 p_ <- 10
 n_tree_ <- 50
-mvn_dim_ <- 2
+mvn_dim_ <- 3
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
 
