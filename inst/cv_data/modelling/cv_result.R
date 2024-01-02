@@ -3,21 +3,16 @@ rm(list=ls())
 library(doParallel)
 devtools::load_all()
 set.seed(42)
-n_ <- 500
+n_ <- 1000
 p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 2
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
-sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
+sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
 
 
 # Printing whcih model is being generated
 cat("n_", n_, "p_" , p_, "tree", n_tree_, "mvn_dim", mvn_dim_, "task", task_, "sim " , sim_)
-# cv_ <- readRDS(file = paste0("inst/cv_data/",task,"/",sim_,"_n_",n_,"_p_",p_,"_d_",mvn_dim_,".Rds"))
-# n_rep_ <- length(cv_)
-i <- 1
-# cv_element_ <- cv_[[i]]
-
 
 # It was run to test at first
 n_rep <- 100
@@ -34,6 +29,8 @@ if(task_ == "regression" & sim_ == "friedman1"){
                 cv_[[rep]]$test <- sim_mvn_friedman2(n = n_,p = p_,mvn_dim = mvn_dim_)
         }
 }
+
+
 # Setting up the parallel simulation
 number_cores <- 20
 cl <- parallel::makeCluster(number_cores)
