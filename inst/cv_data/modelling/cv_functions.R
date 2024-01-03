@@ -33,7 +33,7 @@ cv_matrix <- function(cv_element_,
      for(i_ in 1:mvn_dim_){
           bart_models[[i_]] <- bart(x.train = x_train,y.train = y_train[,i_],
                                              x.test = x_test,ntree = n_tree_,
-                                             ndpost = 2000,nskip = 500,keepevery = TRUE)
+                                             ndpost = 2000,nskip = 500,)
 
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
@@ -72,7 +72,7 @@ cv_matrix <- function(cv_element_,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
-                                                                     value = pi_coverage(y = y_true_test[,i_],
+                                                                     value = pi_coverage(y = y_test[,i_],
                                                                                          y_hat_post = t(bart_models[[i_]]$yhat.test),
                                                                                          sd_post = bart_models[[i_]]$sigma,
                                                                                          prob = 0.5),
@@ -80,7 +80,7 @@ cv_matrix <- function(cv_element_,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
-                                                                     value = pi_coverage(y = y_true_train[,i_],
+                                                                     value = pi_coverage(y = y_train[,i_],
                                                                                          y_hat_post = t(bart_models[[i_]]$yhat.train),
                                                                                          sd_post = bart_models[[i_]]$sigma,
                                                                                          prob = 0.5),
@@ -102,6 +102,23 @@ cv_matrix <- function(cv_element_,
                                                                                          prob_ = 0.5),
                                                                      model  = "BART", fold = i,
                                                                      mvn_dim = i_))
+
+          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
+                                                                     value = cr_coverage(f_true = y_true_train[,i_],
+                                                                                         f_post = t(bart_models[[i_]]$yhat.train),
+                                                                                         prob = 0.5),
+                                                                     model  = "BART", fold = i,
+                                                                     mvn_dim = i_))
+
+          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
+                                                                     value = cr_coverage(f_true = y_true_test[,i_],
+                                                                                         f_post = t(bart_models[[i_]]$yhat.test),
+                                                                                         prob = 0.5),
+                                                                     model  = "BART", fold = i,
+                                                                     mvn_dim = i_))
+
+
+
 
 
      }
@@ -142,7 +159,7 @@ cv_matrix <- function(cv_element_,
                                                                         mvn_dim = i_))
 
              comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
-                                                                        value = pi_coverage(y = y_true_test[,i_],
+                                                                        value = pi_coverage(y = y_test[,i_],
                                                                                             y_hat_post = (mvbart_mod$y_hat_test[,i_,]),
                                                                                             sd_post = sqrt(mvbart_mod$Sigma_post[i_,i_,]),
                                                                                             prob = 0.5),
@@ -150,7 +167,7 @@ cv_matrix <- function(cv_element_,
                                                                         mvn_dim = i_))
 
              comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
-                                                                        value = pi_coverage(y = y_true_train[,i_],
+                                                                        value = pi_coverage(y = y_train[,i_],
                                                                                             y_hat_post =  (mvbart_mod$y_hat[,i_,]),
                                                                                             sd_post = sqrt(mvbart_mod$Sigma_post[i_,i_,]),
                                                                                             prob = 0.5,n_mcmc_replications = 100),
@@ -171,6 +188,20 @@ cv_matrix <- function(cv_element_,
                                                                                             y_hat_ =  mvbart_mod$y_hat_mean[,i_],
                                                                                             sd_ = mean(sqrt(mvbart_mod$Sigma_post[i_,i_,])),
                                                                                             prob_ = 0.5),
+                                                                        model  = "mvBART", fold = i,
+                                                                        mvn_dim = i_))
+
+             comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
+                                                                        value = cr_coverage(f_true = y_true_test[,i_],
+                                                                                            f_post = (mvbart_mod$y_hat_test[,i_,]),
+                                                                                            prob = 0.5),
+                                                                        model  = "mvBART", fold = i,
+                                                                        mvn_dim = i_))
+
+             comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
+                                                                        value = cr_coverage(f_true = y_true_train[,i_],
+                                                                                            f_post =  (mvbart_mod$y_hat[,i_,]),
+                                                                                            prob = 0.5),
                                                                         model  = "mvBART", fold = i,
                                                                         mvn_dim = i_))
 
@@ -408,7 +439,7 @@ stan_mvn <- function(cv_element_,
                                                                         mvn_dim = i_))
 
              comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
-                                                                        value = pi_coverage(y = y_true_test[,i_],
+                                                                        value = pi_coverage(y = y_test[,i_],
                                                                                             y_hat_post = t(stan_samples_regression$y_hat_test[,,i]),
                                                                                             sd_post = sqrt(stan_samples_regression$Sigma[,i_,i_]),
                                                                                             prob = 0.5),
@@ -416,7 +447,7 @@ stan_mvn <- function(cv_element_,
                                                                         mvn_dim = i_))
 
              comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
-                                                                        value = pi_coverage(y = y_true_train[,i_],
+                                                                        value = pi_coverage(y = y_train[,i_],
                                                                                             y_hat_post =  t(stan_samples_regression$y_hat_train[,,i]),
                                                                                             sd_post = sqrt(stan_samples_regression$Sigma[,i_,i_]),
                                                                                             prob = 0.5),

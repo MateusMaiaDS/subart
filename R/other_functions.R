@@ -30,7 +30,7 @@ crps <- function(y,means,sds){
         return(list(CRPS = mean(crps_vector), crps = crps_vector))
 }
 
-
+# Coverage for the prediction intervals
 pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications = 1000){
 
         # Getting the number of posterior samples and columns, respect.
@@ -73,6 +73,29 @@ pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications =
         pi_cov <- sum((y<=pi_upper_bd) & (y>=pi_lower_bd))/n_test
 
         return(pi_cov)
+}
+
+# A function to calculate coverage of the credible interval
+cr_coverage <- function(f_true, f_post, prob = 0.5){
+
+
+        if(length(f_true) != nrow(f_post)){
+                stop("Insert the posterior matrix in the shape of n \\times _mcmc")
+        }
+        # Getting the lower and upper boundary
+        cr_low_bd <- apply(f_post,1,function(x) stats::quantile((x), prob = (1-prob)/2))
+        cr_up_bd <- apply(f_post,1,function(x) stats::quantile((x), prob = (1+prob)/2))
+
+
+        if((length(cr_low_bd) != length(f_true)) || (length(cr_up_bd) != length(f_true)) ){
+                stop("Something wrong with the cr_low_bd or cr_up_bd")
+        }
+
+        # Calculating the coverage
+        cr_cov <- mean( (f_true>=cr_low_bd) & (f_true<=cr_up_bd) )
+
+        return(cr_cov )
+
 }
 
 # Normalize BART function (Same way ONLY THE COVARIATE NOW)

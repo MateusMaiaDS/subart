@@ -191,8 +191,8 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
      # Setting some default values for Sigma
      if(mvn_dim==3){
           sigma1 <- 1
-          sigma2 <- 2.5
-          sigma3 <- 5
+          sigma2 <- 1
+          sigma3 <- 1
           rho12 <- 0.8
           rho13 <- 0.5
           rho23 <- 0.25
@@ -204,7 +204,7 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
           eigen(Sigma)$values
      } else {
           sigma1 <- 1
-          sigma2 <- 10
+          sigma2 <- 1
           rho12 <- 0.75
           Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
           Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
@@ -283,8 +283,8 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
      if(is.null(Sigma)){
           if(mvn_dim==3){
                sigma1 <- 1
-               sigma2 <- 125
-               sigma3 <- 0.1
+               sigma2 <- 1
+               sigma3 <- 1
                rho12 <- 0.8
                rho13 <- 0.5
                rho23 <- 0.25
@@ -296,7 +296,7 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
                eigen(Sigma)$values
           } else {
                sigma1 <- 1
-               sigma2 <- 125
+               sigma2 <- 1
                rho12 <- 0.75
                Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
                Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
