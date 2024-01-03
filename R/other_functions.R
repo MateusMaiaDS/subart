@@ -51,7 +51,7 @@ pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications =
 
         for(i in 1:n_test){
                 y_hats <- y_hat_post[i,]
-                n_gs <- sample(1:nrow(y_hat_post),size = n_mcmc_replications,replace = TRUE)
+                n_gs <- sample(1:ncol(y_hat_post),size = n_mcmc_replications,replace = TRUE)
 
                 for(k in 1:n_mcmc_replications){
                         y_hat_draw = y_hats[n_gs[k]]

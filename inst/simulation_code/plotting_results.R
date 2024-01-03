@@ -8,7 +8,7 @@ p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 2
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
-sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
+sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
 
 result <- readRDS(paste0("~/spline_bart_lab/mvnbart6/inst/cv_data/regression/result/",
                          sim_,"_",task_,"_n_",n_,"_p_",p_,"_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
