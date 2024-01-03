@@ -358,7 +358,8 @@ stan_mvn <- function(cv_element_,
                      mvn_dim_,
                      n_,
                      p_,
-                     i){
+                     i,
+                     stan_model_regression){
 
         # Stan SUR ####
         library(rstan)

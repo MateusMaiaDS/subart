@@ -1,6 +1,7 @@
 # Generating the model results
 rm(list=ls())
 library(doParallel)
+library(rstan)
 devtools::load_all()
 set.seed(42)
 n_ <- 250
@@ -81,3 +82,9 @@ stan_model_regression <- stan_model(model_code = stan_code_regression)
 # Running inside the function
 i <- 1
 cv_element_ <- cv_[[i]]
+
+result <- vector("list",n_rep)
+
+for(i in 1:n_rep){
+        result[[i]] <- stan_model()
+}
