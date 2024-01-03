@@ -29,6 +29,15 @@ cv_matrix <- function(cv_element_,
                                       model = NULL,
                                       mvn_dim = NULL,
                                       fold = NULL)
+
+     # Creating the data.frame for the correlation parameters
+     correlation_metrics <- data.frame(metric = NULL,
+                                       value = NULL,
+                                       model = NULL,
+                                       mvn_dim = NULL,
+                                       param_index = NULL,
+                                       fold = NULL)
+
      # Generating the BART model
      for(i_ in 1:mvn_dim_){
           bart_models[[i_]] <- bart(x.train = x_train,y.train = y_train[,i_],
@@ -205,7 +214,47 @@ cv_matrix <- function(cv_element_,
                                                                         model  = "mvBART", fold = i,
                                                                         mvn_dim = i_))
 
+            if(mvn_dim_== 2) {
 
+              # Doing for the correlation parameters
+              rho_ <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
+              rho_post <- mvbart_mod$Sigma_post[1,2,]/(sqrt(mvbart_mod$Sigma_post[1,1,])*sqrt(mvbart_mod$Sigma_post[2,2,]))
+              correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                          value = cr_coverage(f_true = rho_,
+                                                                                              f_post = matrix(rho_post,ncol = length(rho_post)),prob = 0.5),
+                                                                          model = "mvBART",
+                                                                          mvn_dim = 2,
+                                                                          param_index = "rho12",
+                                                                          fold = i))
+
+              correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                          value = rmse(x = mean(rho_post),y = rho_),
+                                                                          model = "mvBART",
+                                                                          mvn_dim = 2,
+                                                                          param_index = "rho12",
+                                                                          fold = i))
+
+              # Doing for the main sigma parameters
+              for(jj_ in 1:mvn_dim_){
+                sigma_ <- sqrt(Sigma_[jj_,jj_])
+                sigma_post <- sqrt(mvbart_mod$Sigma_post[jj_,jj_,])
+                correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
+                                                                             value = cr_coverage(f_true = sigma_,
+                                                                                                 f_post = matrix(sigma_post,ncol = length(sigma_post)),
+                                                                                                 prob = 0.5),
+                                                                             model = "mvBART",
+                                                                             mvn_dim = 2,
+                                                                             param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                             fold = i))
+
+                correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
+                                                                             value = rmse(x = mean(sigma_post),y = sigma_),
+                                                                             model = 'mvBART',
+                                                                             mvn_dim = 2,
+                                                                             param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                             fold = i))
+              }
+            }
 
 
      }
@@ -330,54 +379,8 @@ stan_mvn <- function(cv_element_,
                                          value = NULL,
                                          model = NULL,
                                          mvn_dim = NULL,
-                                         fold = NULL)
-
-        # define model - this should be done outside the simulation loop
-        stan_code_regression <- "
-        data {
-          int<lower=1> K;
-          int<lower=1> J;
-          int<lower=0> N;
-          array[N] vector[J] x_train;
-          array[N] vector[J] x_test;
-          array[N] vector[K] y;
-        }
-        parameters {
-          matrix[K, J] beta;
-          cholesky_factor_corr[K] L_Omega;
-          vector<lower=0>[K] L_sigma;
-        }
-        model {
-          array[N] vector[K] mu;
-          matrix[K, K] L_Sigma;
-
-          for (n in 1:N) {
-            mu[n] = beta * x_train[n];
-
-          }
-
-          L_Sigma = diag_pre_multiply(L_sigma, L_Omega);
-
-          to_vector(beta) ~ normal(0, 5);
-          L_Omega ~ lkj_corr_cholesky(4);
-          L_sigma ~ cauchy(0, 2.5);
-
-          y ~ multi_normal_cholesky(mu, L_Sigma);
-        }
-        generated quantities{
-          array[N] vector[K] y_hat_train;
-          array[N] vector[K] y_hat_test;
-          for (n in 1:N) {
-            y_hat_train[n] = beta * x_train[n];
-            y_hat_test[n] = beta * x_test[n];
-          }
-          matrix[K, K] Sigma;
-          Sigma = multiply_lower_tri_self_transpose(diag_pre_multiply(L_sigma, L_Omega));
-        }
-        "
-
-        # compile model - this should be done outside the simulation loop
-        stan_model_regression <- stan_model(model_code = stan_code_regression)
+                                         fold = NULL,
+                                         stan_model_regression)
 
         # everything from now on should be done inside the simulation loop
         # define data - here I guess the first 1 in each line should be replaced by some replication index
