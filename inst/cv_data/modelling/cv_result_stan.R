@@ -9,7 +9,7 @@ p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 3
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
-sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
+sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
 
 
 # Printing whcih model is being generated

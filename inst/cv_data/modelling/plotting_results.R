@@ -3,7 +3,7 @@ library(tidyverse)
 rm(list=ls())
 devtools::load_all()
 set.seed(42)
-n_ <- 250
+n_ <- 5000
 p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 2
@@ -59,8 +59,11 @@ pi_plot <- result_df %>% filter(metric == "pi_test") %>%
 
 cowplot::plot_grid(rmse_plot,crps_plot,pi_plot,ncol = 3)
 
-# Plotting results for the
-result_df_corr %>% group_by(metric,param_index,model) %>% summarise(mean_cv = mean(value))
-result_df_corr %>% filter(metric == "rmse") %>% ggplot()+
-        geom_boxplot(mapping = aes( x = param_index, y = value, col = model))+
-        theme_classic()
+# Plotting results for the CR coverage
+result_df_corr %>% filter(metric == "cr_cov") %>%  group_by(param_index,model) %>%
+        summarise(mean_cv = mean(value)) %>% print(n = 24)
+
+result_df_corr %>% filter(metric == "rmse") %>%  group_by(param_index,model) %>%
+        summarise(mean_cv = sqrt(mean(value^2))) %>% print(n = 24)
+
+
