@@ -6,9 +6,9 @@ set.seed(42)
 n_ <- 250
 p_ <- 10
 n_tree_ <- 50
-mvn_dim_ <- 2
-task_ <- "regression" # For this it can be either 'classification' or 'regression'
-sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
+mvn_dim_ <- 3
+task_ <- "classification" # For this it can be either 'classification' or 'regression'
+sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
 
 # Printing whcih model is being generated
@@ -28,6 +28,13 @@ if(task_ == "regression" & sim_ == "friedman1"){
                 cv_[[rep]]$train <- sim_mvn_friedman2(n = n_,p = p_,mvn_dim = mvn_dim_)
                 cv_[[rep]]$test <- sim_mvn_friedman2(n = n_,p = p_,mvn_dim = mvn_dim_)
         }
+} else if(task_ == "classification" & sim_ == "friedman1"){
+        for(rep in 1:n_rep){
+                cv_[[rep]]$train <- sim_class_mvn_friedman1(n = n_,p = p_,mvn_dim = mvn_dim_)
+                cv_[[rep]]$test <- sim_class_mvn_friedman1(n = n_,p = p_,mvn_dim = mvn_dim_)
+        }
+} else {
+        stop ("Insert a valid task and simulation")
 }
 
 # Running inside the function
@@ -51,7 +58,8 @@ result <- foreach(i = 1:n_rep,.packages = c("dbarts","systemfit","dplyr")) %dopa
                       mvn_dim_ = mvn_dim_,
                       n_ = n_,
                       p_ = p_,
-                      i =  i )
+                      i =  i,
+                      task_ = task_)
      aux
 }
 
@@ -59,6 +67,6 @@ result <- foreach(i = 1:n_rep,.packages = c("dbarts","systemfit","dplyr")) %dopa
 stopCluster(cl)
 
 # Saving the results
-saveRDS(object = result, file = paste0("inst/cv_data/regression/result/",sim_,"_",task_,"_n_",n_,"_p_",p_,
+saveRDS(object = result, file = paste0("inst/cv_data/",task_,"/result/",sim_,"_",task_,"_n_",n_,"_p_",p_,
                                       "_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
 

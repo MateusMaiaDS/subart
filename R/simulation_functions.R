@@ -53,7 +53,7 @@ sim_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 
      # Adding the only if p=3
      if(mvn_dim==3){
-          y3 <- 15* x[,5] - exp(-0.5*x[,2])
+            y3 <- 10* x[, 5] - 5 * x[, 2] - 5 * x[,4]
      }
 
      y <- matrix(0,nrow = n,ncol = mvn_dim)
@@ -188,81 +188,69 @@ sim_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
 sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 
 
-     # Setting some default values for Sigma
-     if(mvn_dim==3){
-          sigma1 <- 1
-          sigma2 <- 1
-          sigma3 <- 1
-          rho12 <- 0.8
-          rho13 <- 0.5
-          rho23 <- 0.25
-          Sigma <- diag(c(sigma1^2,sigma2^2,sigma3^2),nrow = mvn_dim)
-          Sigma[1,2] <- Sigma[2,1] <- rho12*sigma1*sigma2
-          Sigma[1,3] <- Sigma[3,1] <- rho13*sigma1*sigma3
-          Sigma[2,3] <- Sigma[3,2] <- rho23*sigma2*sigma3
-          determinant(Sigma)$modulus[1]
-          eigen(Sigma)$values
-     } else {
-          sigma1 <- 1
-          sigma2 <- 1
-          rho12 <- 0.75
-          Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
-          Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
-          determinant(Sigma)$modulus[1]
-          eigen(Sigma)$values
+        if (mvn_dim == 3) {
+                sigma1 <- 1
+                sigma2 <- 1
+                sigma3 <- 1
+                rho12 <- 0.8
+                rho13 <- 0.5
+                rho23 <- 0.25
+                Sigma <- diag(c(sigma1^2, sigma2^2, sigma3^2), nrow = mvn_dim)
+                Sigma[1, 2] <- Sigma[2, 1] <- rho12 * sigma1 * sigma2
+                Sigma[1, 3] <- Sigma[3, 1] <- rho13 * sigma1 * sigma3
+                Sigma[2, 3] <- Sigma[3, 2] <- rho23 * sigma2 * sigma3
+                determinant(Sigma)$modulus[1]
+                eigen(Sigma)$values
+        }
+        else {
+                sigma1 <- 1
+                sigma2 <- 1
+                rho12 <- 0.75
+                Sigma <- diag(c(sigma1^2, sigma2^2), nrow = mvn_dim)
+                Sigma[1, 2] <- Sigma[2, 1] <- sigma1 * sigma2 * rho12
+                determinant(Sigma)$modulus[1]
+                eigen(Sigma)$values
+        }
+        if (NROW(Sigma) != mvn_dim | NCOL(Sigma) != mvn_dim) {
+                stop(paste0("Insert a valid Sigma matrix for the ", mvn_dim,
+                            "-d case."))
+        }
+        if (!all(eigen(Sigma)$values > 0)) {
+                stop("Insert a positive-semidefined matrix")
+        }
+        x <- matrix(runif(p * n, min = -1, max = 1), ncol = p)
+        z1 <- sin(x[, 1] * x[, 2] * pi) + x[, 3]^3
+        z2 <- -1 + 2 * x[,1]*x[,4] + exp(x[,5])
+        if (mvn_dim == 3) {
+                z3 <- 0.5 * x[,2] + 0.5 * x[,4] + x[,5]
+        }
+        y <- matrix(0, nrow = n, ncol = mvn_dim)
+        y_true <- matrix(0, nrow = n, ncol = mvn_dim)
+        z <- matrix(0, nrow = n, ncol = mvn_dim)
+        p <- matrix(0, nrow = n, ncol = mvn_dim)
+        if (mvn_dim == 3) {
+                z_true <- cbind(z1, z2, z3)
+                for (i in 1:n) {
+                        z[i, ] <- z_true[i, ] + mvnfast::rmvn(n = 1, mu = rep(0,
+                                                                              mvn_dim), sigma = Sigma)
+                        y[i, ] <- (z[i, ] > 0)
+                        y_true[i, ] <- (z_true[i, ] > 0)
+                        p[i, ] <- pnorm(z[i, ])
+                }
+        }
+        else if (mvn_dim == 2) {
+                z_true <- cbind(z1, z2)
+                for (i in 1:n) {
+                        z[i, ] <- z_true[i, ] + mvnfast::rmvn(n = 1, mu = rep(0,
+                                                                              mvn_dim), sigma = Sigma)
+                        y[i, ] <- (z[i, ] > 0)
+                        y_true[i, ] <- (z_true[i, ] > 0)
+                        p[i, ] <- pnorm(z[i, ])
+                }
+        }
+        return(list(x = data.frame(x), y = y, z = z, z_true = z_true, y_true = y_true,
+                    p = p, Sigma = Sigma))
 
-     }
-
-     # Verifying if it is a valid Sigma.
-     if(NROW(Sigma)!=mvn_dim | NCOL(Sigma)!=mvn_dim){
-          stop(paste0("Insert a valid Sigma matrix for the ",mvn_dim,"-d case."))
-     }
-     # Verifying if is semi-positive-define
-     if(!all(eigen(Sigma)$values>0)){
-          stop("Insert a positive-semidefined matrix")
-     }
-
-     # Generate the x matrix
-     x <- matrix(runif(p*n,min = -1,max = 1), ncol = p)
-     z1 <- 5*sin(x[,1]*x[,2]*pi) + 20*(x[,3]-0.5)^3
-     z2 <- 4*x[,4] - 10*sin(x[,1]*pi)
-
-     # Adding the only if p=3
-     if(mvn_dim==3){
-          z3 <- 10* x[,5] - exp(-0.5*x[,2])
-     }
-
-     y <- matrix(0,nrow = n,ncol = mvn_dim)
-     y_true <- matrix(0,nrow = n, ncol = mvn_dim)
-     z <- matrix(0, nrow = n, ncol = mvn_dim)
-     p <- matrix(0, nrow = n, ncol = mvn_dim)
-
-     if(mvn_dim==3){
-          z_true <- cbind(z1,z2,z3)
-          for(i in 1:n){
-               z[i,] <- z_true[i,] + mvnfast::rmvn(n = 1,mu = rep(0,mvn_dim),sigma = Sigma)
-               y[i,] <- (z[i,]>0)
-               y_true[i,] <- (z_true[i,]>0)
-               p[i,] <- pnorm(z[i,])
-          }
-
-     } else if(mvn_dim==2){
-          z_true <- cbind(z1,z2)
-          for(i in 1:n){
-               z[i,] <- z_true[i,] + mvnfast::rmvn(n = 1,mu = rep(0,mvn_dim),sigma = Sigma)
-               y[i,] <- (z[i,]>0)
-               y_true[i,] <- (z_true[i,]>0)
-               p[i,] <- pnorm(z[i,])
-          }
-     }
-
-     # Return a list with all the quantities
-     return(list( x = data.frame(x) ,
-                  y = y,
-                  z_true = z_true,
-                  y_true = y_true,
-                  p = p,
-                  Sigma = Sigma))
 }
 
 #' Simulation setting for the Classification case
