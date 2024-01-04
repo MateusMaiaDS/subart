@@ -3,11 +3,11 @@ rm(list=ls())
 library(doParallel)
 devtools::load_all()
 set.seed(42)
-n_ <- 250
+n_ <- 500
 p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 3
-task_ <- "classification" # For this it can be either 'classification' or 'regression'
+task_ <- "regression" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
 
@@ -38,8 +38,8 @@ if(task_ == "regression" & sim_ == "friedman1"){
 }
 
 # Running inside the function
-i <- 1
-cv_element_ <- cv_[[i]]
+# i <- 1
+# cv_element_ <- cv_[[i]]
 
 # Setting up the parallel simulation
 number_cores <- 20
