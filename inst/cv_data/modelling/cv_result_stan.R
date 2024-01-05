@@ -4,7 +4,7 @@ library(doParallel)
 library(rstan)
 devtools::load_all()
 set.seed(42)
-n_ <- 250
+n_ <- 500
 p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 3

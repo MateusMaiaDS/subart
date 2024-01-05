@@ -3,10 +3,10 @@ library(tidyverse)
 rm(list=ls())
 devtools::load_all()
 set.seed(42)
-n_ <- 5000
+n_ <- 500
 p_ <- 10
 n_tree_ <- 50
-mvn_dim_ <- 2
+mvn_dim_ <- 3
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
@@ -29,33 +29,36 @@ result_df <- rbind(result_df,result_df_STAN)
 result_df_corr <- rbind(result_df_corr, result_df_corr_STAN)
 
 rmse_plot <- result_df %>% filter(metric == "rmse_test") %>%
-     mutate(mvn_dim = as.factor(mvn_dim)) %>%
-     ggplot()+
-     geom_boxplot(mapping = aes(x = model, y = value))+
-     ylab("RMSE test")+
-     xlab("Model")+
-     facet_wrap(~mvn_dim,scales = "free_y")+
-     theme_classic()
+        mutate(mvn_dim = as.factor(mvn_dim)) %>%
+        ggplot()+
+        geom_boxplot(mapping = aes(x = model, y = value))+
+        ylab("RMSE test")+
+        xlab("Model")+
+        facet_wrap(~mvn_dim,scales = "free_y")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90))
 
 crps_plot <- result_df %>% filter(metric == "crps_test") %>%
-     mutate(mvn_dim = as.factor(mvn_dim)) %>%
-     ggplot()+
-     geom_boxplot(mapping = aes(x = model, y = value))+
-     ylab("CRPS test")+
-     xlab("Model")+
-     facet_wrap(~mvn_dim,scales = "free_y")+
-     theme_classic()
+        mutate(mvn_dim = as.factor(mvn_dim)) %>%
+        ggplot()+
+        geom_boxplot(mapping = aes(x = model, y = value))+
+        ylab("CRPS test")+
+        xlab("Model")+
+        facet_wrap(~mvn_dim,scales = "free_y")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90))
 
 
 pi_plot <- result_df %>% filter(metric == "pi_test") %>%
-     mutate(mvn_dim = as.factor(mvn_dim)) %>%
-     ggplot()+
-     geom_boxplot(mapping = aes(x = model, y = value))+
-     geom_hline(yintercept = 0.5, lty = 'dashed', col = 'blue')+
-     ylab("PI coverage")+
-     xlab("Model")+
-     facet_wrap(~mvn_dim,scales = "free_y")+
-     theme_classic()
+        mutate(mvn_dim = as.factor(mvn_dim)) %>%
+        ggplot()+
+        geom_boxplot(mapping = aes(x = model, y = value))+
+        geom_hline(yintercept = 0.5, lty = 'dashed', col = 'blue')+
+        ylab("PI coverage")+
+        xlab("Model")+
+        facet_wrap(~mvn_dim,scales = "free_y")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90))
 
 cowplot::plot_grid(rmse_plot,crps_plot,pi_plot,ncol = 3)
 

@@ -203,3 +203,119 @@ ci_coverage <- function(y_,
 
         return(ci_cov)
 }
+
+# Binary classification metrics
+logloss <- function(y_true, y_hat){
+
+
+        # # Debugging the function
+        # y_true <- cv_element_$test$y_true[,1]
+        # y_hat <- pnorm(mvbart_mod$y_hat_test_mean[,1])
+
+
+        # Some previous error checking messages
+        if(!is.vector(y_true)){
+                stop("Insert a valid vector for the true observed value of y")
+        }
+        if(!is.vector(y_hat)){
+                stop("Insert a valid vector for the true observed value of y")
+        }
+        if(any(y_hat<0) | any(y_hat>1)){
+                stop("Something wrong with the predicted probabilities")
+        }
+
+        if(length(y_hat)!=length(y_true)){
+                stop("y_hat and y_true must be the same size.")
+        }
+
+        neg_loglike <- -mean(y_true*log(y_hat) + (1-y_true)*log(1-y_hat))
+        if(is.nan(neg_loglike)){
+                stop("Insert values for y_hat")
+        }
+        return( neg_loglike)
+
+}
+
+brierscore <- function(y_true, y_hat){
+
+
+        # # Debugging the function
+        # y_true <- cv_element_$test$y_true[,1]
+        # y_hat <- pnorm(mvbart_mod$y_hat_test_mean[,1])
+
+
+        # Some previous error checking messages
+        if(!is.vector(y_true)){
+                stop("Insert a valid vector for the true observed value of y")
+        }
+        if(!is.vector(y_hat)){
+                stop("Insert a valid vector for the true observed value of y")
+        }
+        if(any(y_hat<0) | any(y_hat>1)){
+                stop("Something wrong with the predicted probabilities")
+        }
+        if(length(y_hat)!=length(y_true)){
+                stop("y_hat and y_true must be the same size.")
+        }
+        # Returning the brier-score it should be between 0 and one
+        return( mean((y_true-y_hat)^2))
+
+}
+
+# Getting the accuracy
+acc <- function(y_true, y_hat){
+
+
+        # # Debugging the function
+        # y_true <- cv_element_$test$y_true[,1]
+        # y_hat <- mvbart_mod$y_hat_test_mean_class[,1]
+
+        # Some previous error checking messages
+        if(!is.vector(y_true)){
+                stop("Enter a valid vector with the binary outcomes.")
+        }
+        if(!is.vector(y_hat)){
+                stop("Enter a valid vector with the binary outcomes.")
+        }
+        if(length(unique(y_hat))>2 | length(unique(y_true))>2){
+                stop("Enter a valid vector with the binary outcomes.")
+        }
+        if(length(y_hat)!=length(y_true)){
+                stop("y_hat and y_true must be the same size.")
+        }
+        # Returning the brier-score it should be between 0 and one
+        return( sum(diag(table(y_hat,y_true)))/length(y_hat))
+
+}
+
+# Getting the accuracy
+mcc <- function(y_true, y_hat){
+
+
+        # # Debugging the function
+        # y_true <- cv_element_$test$y_true[,1]
+        # y_hat <- mvbart_mod$y_hat_test_mean_class[,1]
+
+        # Some previous error checking messages
+        if(!is.vector(y_true)){
+                stop("Enter a valid vector with the binary outcomes.")
+        }
+        if(!is.vector(y_hat)){
+                stop("Enter a valid vector with the binary outcomes.")
+        }
+        if(length(unique(y_hat))>2 | length(unique(y_true))>2){
+                stop("Enter a valid vector with the binary outcomes.")
+        }
+        if(length(y_hat)!=length(y_true)){
+                stop("y_hat and y_true must be the same size.")
+        }
+        # Returning the brier-score it should be between 0 and one
+        cf <- (table(y_hat,y_true))
+        mcc <- (cf[1,1]*cf[2,2]-cf[1,2]*cf[2,1])/(sqrt((cf[1,1]+cf[1,2])*(cf[1,1]+cf[2,1])*(cf[2,2]+cf[1,2])*(cf[2,2]+cf[2,1])))
+        return( mcc)
+
+}
+
+
+
+

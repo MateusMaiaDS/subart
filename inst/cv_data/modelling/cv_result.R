@@ -3,7 +3,7 @@ rm(list=ls())
 library(doParallel)
 devtools::load_all()
 set.seed(42)
-n_ <- 5000
+n_ <- 1000
 p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 3
