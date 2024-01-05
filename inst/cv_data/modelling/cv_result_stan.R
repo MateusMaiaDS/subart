@@ -4,12 +4,12 @@ library(doParallel)
 library(rstan)
 devtools::load_all()
 set.seed(42)
-n_ <- 500
+n_ <- 250
 p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 3
-task_ <- "regression" # For this it can be either 'classification' or 'regression'
-sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
+task_ <- "classification" # For this it can be either 'classification' or 'regression'
+sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
 
 # Printing whcih model is being generated
@@ -177,6 +177,7 @@ stan_model_regression <- stan_model(model_code = stan_code_regression)
 
 result <- vector("list",n_rep)
 source("inst/cv_data/modelling/cv_functions.R")
+
 for(i in 1:n_rep){
         result[[i]] <- stan_mvn(cv_element_ = cv_[[i]],
                                 mvn_dim_ = mvn_dim_,
