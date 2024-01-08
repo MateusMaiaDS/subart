@@ -6,14 +6,14 @@ set.seed(42)
 n_ <- 500
 p_ <- 10
 n_tree_ <- 50
-mvn_dim_ <- 3
-task_ <- "regression" # For this it can be either 'classification' or 'regression'
+mvn_dim_ <- 2
+task_ <- "classification" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
-result <- readRDS(paste0("~/spline_bart_lab/mvnbart6/inst/cv_data/regression/result/",
+result <- readRDS(paste0("~/spline_bart_lab/mvnbart6/inst/cv_data/",task_,"/result/",
                          sim_,"_",task_,"_n_",n_,"_p_",p_,"_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
 
-result_STAN <- readRDS(paste0("~/spline_bart_lab/mvnbart6/inst/cv_data/regression/result/STAN_",
+result_STAN <- readRDS(paste0("~/spline_bart_lab/mvnbart6/inst/cv_data/",task_,"/result/STAN_",
                          sim_,"_",task_,"_n_",n_,"_p_",p_,"_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
 
 
@@ -28,7 +28,7 @@ result_df_corr_STAN <- lapply(result_STAN,function(x){x$correlation_metrics}) %>
 result_df <- rbind(result_df,result_df_STAN)
 result_df_corr <- rbind(result_df_corr, result_df_corr_STAN)
 
-rmse_plot <- result_df %>% filter(metric == "rmse_test") %>%
+rmse_plot <- result_df %>% filter(metric == "logloss_test") %>%
         mutate(mvn_dim = as.factor(mvn_dim)) %>%
         ggplot()+
         geom_boxplot(mapping = aes(x = model, y = value))+
@@ -38,7 +38,7 @@ rmse_plot <- result_df %>% filter(metric == "rmse_test") %>%
         theme_classic()+
         theme(axis.text.x = element_text(angle = 90))
 
-crps_plot <- result_df %>% filter(metric == "crps_test") %>%
+crps_plot <- result_df %>% filter(metric == "acc_test") %>%
         mutate(mvn_dim = as.factor(mvn_dim)) %>%
         ggplot()+
         geom_boxplot(mapping = aes(x = model, y = value))+
@@ -49,7 +49,7 @@ crps_plot <- result_df %>% filter(metric == "crps_test") %>%
         theme(axis.text.x = element_text(angle = 90))
 
 
-pi_plot <- result_df %>% filter(metric == "pi_test") %>%
+pi_plot <- result_df %>% filter(metric == "cr_test") %>%
         mutate(mvn_dim = as.factor(mvn_dim)) %>%
         ggplot()+
         geom_boxplot(mapping = aes(x = model, y = value))+

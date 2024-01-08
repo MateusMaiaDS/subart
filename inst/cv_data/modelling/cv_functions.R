@@ -191,7 +191,7 @@ cv_matrix <- function(cv_element_,
                                                                                            f_post = t(bart_models[[i_]]$yhat.train),
                                                                                            prob = 0.5),
                                                                        model = "BART", fold = i,
-                                                                       mvn_dim = i))
+                                                                       mvn_dim = i_))
 
             # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
             comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
@@ -199,7 +199,7 @@ cv_matrix <- function(cv_element_,
                                                                                            f_post = t(bart_models[[i_]]$yhat.test),
                                                                                            prob = 0.5),
                                                                        model = "BART", fold = i,
-                                                                       mvn_dim = i))
+                                                                       mvn_dim = i_))
           } else {
             stop("Insert a valid task.")
         }
@@ -481,7 +481,7 @@ cv_matrix <- function(cv_element_,
                                                                                       f_post = (mvbart_mod$y_hat[,i_,]),
                                                                                       prob = 0.5),
                                                                   model = "mvBART", fold = i,
-                                                                  mvn_dim = i))
+                                                                  mvn_dim = i_))
 
        # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
        comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
@@ -489,7 +489,7 @@ cv_matrix <- function(cv_element_,
                                                                                       f_post = (mvbart_mod$y_hat_test[,i_,]),
                                                                                       prob = 0.5),
                                                                   model = "mvBART", fold = i,
-                                                                  mvn_dim = i))
+                                                                  mvn_dim = i_))
 
 
        # Storing the correlation metrics
@@ -1041,18 +1041,18 @@ stan_mvn <- function(cv_element_,
             # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
             comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
                                                                        value = cr_coverage(f_true = z_true_train[,i_],
-                                                                                           f_post = stan_samples_class$z_hat_train[,,i_],
+                                                                                           f_post = t(stan_samples_class$z_hat_train[,,i_]),
                                                                                            prob = 0.5),
                                                                        model = "bayesSUR", fold = i,
-                                                                       mvn_dim = i))
+                                                                       mvn_dim = i_))
 
             # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
             comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
                                                                        value = cr_coverage(f_true = z_true_test[,i_],
-                                                                                           f_post = stan_samples_class$z_hat_test[,,i_],
+                                                                                           f_post = t(stan_samples_class$z_hat_test[,,i_]),
                                                                                            prob = 0.5),
                                                                        model = "bayesSUR", fold = i,
-                                                                       mvn_dim = i))
+                                                                       mvn_dim = i_))
 
             }
 
