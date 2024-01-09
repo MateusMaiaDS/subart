@@ -49,7 +49,7 @@ crps_plot <- result_df %>% filter(metric == "acc_test") %>%
         theme(axis.text.x = element_text(angle = 90))
 
 
-pi_plot <- result_df %>% filter(metric == "cr_test") %>%
+pi_plot <- result_df %>% filter(metric == "p_cr_test") %>%
         mutate(mvn_dim = as.factor(mvn_dim)) %>%
         ggplot()+
         geom_boxplot(mapping = aes(x = model, y = value))+

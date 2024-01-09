@@ -4,10 +4,10 @@ library(doParallel)
 library(rstan)
 devtools::load_all()
 set.seed(42)
-n_ <- 250
+n_ <- 1000
 p_ <- 10
 n_tree_ <- 50
-mvn_dim_ <- 3
+mvn_dim_ <- 2
 task_ <- "classification" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
