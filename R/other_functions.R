@@ -312,7 +312,7 @@ mcc <- function(y_true, y_hat){
         # Returning the brier-score it should be between 0 and one
         cf <- (table(y_hat,y_true))
         mcc <- (cf[1,1]*cf[2,2]-cf[1,2]*cf[2,1])/(sqrt((cf[1,1]+cf[1,2])*(cf[1,1]+cf[2,1])*(cf[2,2]+cf[1,2])*(cf[2,2]+cf[2,1])))
-        return( mcc)
+        return(mcc)
 
 }
 

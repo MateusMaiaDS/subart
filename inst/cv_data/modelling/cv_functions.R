@@ -23,6 +23,8 @@ cv_matrix <- function(cv_element_,
        z_true_test <- cv_element_$test$z_true
        z_train <- cv_element_$train$z
        z_test <- cv_element_$test$z
+       p_true_train <- pnorm(cv_element_$train$z_true)
+       p_true_test <- pnorm(cv_element_$test$z_true)
      }
 
      # True Sigma element
@@ -186,7 +188,7 @@ cv_matrix <- function(cv_element_,
                                                                        mvn_dim = i_))
 
             # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
-            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_train",
                                                                        value = cr_coverage(f_true = z_true_train[,i_],
                                                                                            f_post = t(bart_models[[i_]]$yhat.train),
                                                                                            prob = 0.5),
@@ -194,12 +196,29 @@ cv_matrix <- function(cv_element_,
                                                                        mvn_dim = i_))
 
             # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
-            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_test",
                                                                        value = cr_coverage(f_true = z_true_test[,i_],
                                                                                            f_post = t(bart_models[[i_]]$yhat.test),
                                                                                            prob = 0.5),
                                                                        model = "BART", fold = i,
                                                                        mvn_dim = i_))
+
+            # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_train",
+                                                                       value = cr_coverage(f_true = p_true_train[,i_],
+                                                                                           f_post = t(pnorm(bart_models[[i_]]$yhat.train)),
+                                                                                           prob = 0.5),
+                                                                       model = "BART", fold = i,
+                                                                       mvn_dim = i_))
+
+            # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_test",
+                                                                       value = cr_coverage(f_true = p_true_test[,i_],
+                                                                                           f_post = t(pnorm(bart_models[[i_]]$yhat.test)),
+                                                                                           prob = 0.5),
+                                                                       model = "BART", fold = i,
+                                                                       mvn_dim = i_))
+
           } else {
             stop("Insert a valid task.")
         }
@@ -426,72 +445,89 @@ cv_matrix <- function(cv_element_,
 
      } else if (task_ == "classification"){ # Considering metrics regarding the classification context
 
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_train",
-                                                                  value = logloss(y_true = y_true_train[,i_],
-                                                                                  y_hat = rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
+       for( i_ in 1:mvn_dim_){ # Generating the metrics regarding each dimension
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_train",
+                                                                      value = logloss(y_true = y_true_train[,i_],
+                                                                                      y_hat = rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
 
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_test",
-                                                                  value = logloss(y_true = y_true_test[,i_],
-                                                                                  y_hat = rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_test",
+                                                                      value = logloss(y_true = y_true_test[,i_],
+                                                                                      y_hat = rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
 
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_train",
-                                                                  value = brierscore(y_true = y_true_train[,i_],
-                                                                                     y_hat = rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_train",
+                                                                      value = brierscore(y_true = y_true_train[,i_],
+                                                                                         y_hat = rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
 
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_test",
-                                                                  value = brierscore(y_true = y_true_test[,i_],
-                                                                                     y_hat = rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
-
-
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_train",
-                                                                  value = acc(y_true = y_true_train[,i_],
-                                                                              y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))>0.5,1,0)),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
-
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_test",
-                                                                  value = acc(y_true = y_true_test[,i_],
-                                                                              y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))>0.5,1,0)),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
-
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_train",
-                                                                  value = mcc(y_true = y_true_train[,i_],
-                                                                              y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))>0.5,1,0)),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
-
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_test",
-                                                                  value = mcc(y_true = y_true_test[,i_],
-                                                                              y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))>0.5,1,0)),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
-
-       # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
-                                                                  value = cr_coverage(f_true = z_true_train[,i_],
-                                                                                      f_post = (mvbart_mod$y_hat[,i_,]),
-                                                                                      prob = 0.5),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
-
-       # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
-       comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
-                                                                  value = cr_coverage(f_true = z_true_test[,i_],
-                                                                                      f_post = (mvbart_mod$y_hat_test[,i_,]),
-                                                                                      prob = 0.5),
-                                                                  model = "mvBART", fold = i,
-                                                                  mvn_dim = i_))
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_test",
+                                                                      value = brierscore(y_true = y_true_test[,i_],
+                                                                                         y_hat = rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
 
 
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_train",
+                                                                      value = acc(y_true = y_true_train[,i_],
+                                                                                  y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))>0.5,1,0)),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_test",
+                                                                      value = acc(y_true = y_true_test[,i_],
+                                                                                  y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))>0.5,1,0)),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_train",
+                                                                      value = mcc(y_true = y_true_train[,i_],
+                                                                                  y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat[,i_,]))>0.5,1,0)),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_test",
+                                                                      value = mcc(y_true = y_true_test[,i_],
+                                                                                  y_hat = ifelse(rowMeans(pnorm(mvbart_mod$y_hat_test[,i_,]))>0.5,1,0)),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+           # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_train",
+                                                                      value = cr_coverage(f_true = z_true_train[,i_],
+                                                                                          f_post = (mvbart_mod$y_hat[,i_,]),
+                                                                                          prob = 0.5),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+           # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_test",
+                                                                      value = cr_coverage(f_true = z_true_test[,i_],
+                                                                                          f_post = (mvbart_mod$y_hat_test[,i_,]),
+                                                                                          prob = 0.5),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+           # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_train",
+                                                                      value = cr_coverage(f_true = p_true_train[,i_],
+                                                                                          f_post = pnorm((mvbart_mod$y_hat[,i_,])),
+                                                                                          prob = 0.5),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+           # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_test",
+                                                                      value = cr_coverage(f_true = p_true_test[,i_],
+                                                                                          f_post = pnorm((mvbart_mod$y_hat_test[,i_,])),
+                                                                                          prob = 0.5),
+                                                                      model = "mvBART", fold = i,
+                                                                      mvn_dim = i_))
+
+       } # Generating the metric regarding each mvn_component
        # Storing the correlation metrics
        if(mvn_dim_== 2) {
 
@@ -700,6 +736,8 @@ stan_mvn <- function(cv_element_,
           z_true_test <- cv_element_$test$z_true
           z_train <- cv_element_$train$z
           z_test <- cv_element_$test$z
+          p_true_train <- pnorm(cv_element_$train$z_true)
+          p_true_test <- pnorm(cv_element_$test$z_true)
         }
 
 
@@ -746,9 +784,9 @@ stan_mvn <- function(cv_element_,
 
         } else if(task_ == "classification"){
           stan_data <- list(
-            x_train = cv_[[1]][[1]]$x,
-            x_test = cv_[[1]][[2]]$x,
-            y = cv_[[1]][[1]]$y,
+            x_train = x_train,
+            x_test = x_test,
+            y = y_train,
             N = n_,
             D = mvn_dim_,
             K = p_
@@ -782,6 +820,8 @@ stan_mvn <- function(cv_element_,
             stan_samples_class$p_hat_test <- pnorm(stan_samples_class$z_hat_test)
             stan_samples_class$p_hat_train_mean <- apply(stan_samples_class$p_hat_train, c(2:3), mean)
             stan_samples_class$p_hat_test_mean <- apply(stan_samples_class$p_hat_test, c(2:3), mean)
+        } else {
+          stop("insert a valid task")
         }
 
       if(task_== "regression"){
@@ -1039,7 +1079,7 @@ stan_mvn <- function(cv_element_,
                                                                        mvn_dim = i_))
 
             # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
-            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_train",
                                                                        value = cr_coverage(f_true = z_true_train[,i_],
                                                                                            f_post = t(stan_samples_class$z_hat_train[,,i_]),
                                                                                            prob = 0.5),
@@ -1047,9 +1087,25 @@ stan_mvn <- function(cv_element_,
                                                                        mvn_dim = i_))
 
             # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
-            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_test",
                                                                        value = cr_coverage(f_true = z_true_test[,i_],
                                                                                            f_post = t(stan_samples_class$z_hat_test[,,i_]),
+                                                                                           prob = 0.5),
+                                                                       model = "bayesSUR", fold = i,
+                                                                       mvn_dim = i_))
+
+            # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_train",
+                                                                       value = cr_coverage(f_true = p_true_train[,i_],
+                                                                                           f_post = t(stan_samples_class$p_hat_train[,,i_]),
+                                                                                           prob = 0.5),
+                                                                       model = "bayesSUR", fold = i,
+                                                                       mvn_dim = i_))
+
+            # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+            comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_test",
+                                                                       value = cr_coverage(f_true = p_true_test[,i_],
+                                                                                           f_post = t(stan_samples_class$p_hat_test[,,i_]),
                                                                                            prob = 0.5),
                                                                        model = "bayesSUR", fold = i,
                                                                        mvn_dim = i_))

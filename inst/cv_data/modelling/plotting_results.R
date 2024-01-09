@@ -3,10 +3,10 @@ library(tidyverse)
 rm(list=ls())
 devtools::load_all()
 set.seed(42)
-n_ <- 500
+n_ <- 250
 p_ <- 10
 n_tree_ <- 50
-mvn_dim_ <- 2
+mvn_dim_ <- 3
 task_ <- "classification" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
@@ -32,7 +32,7 @@ rmse_plot <- result_df %>% filter(metric == "logloss_test") %>%
         mutate(mvn_dim = as.factor(mvn_dim)) %>%
         ggplot()+
         geom_boxplot(mapping = aes(x = model, y = value))+
-        ylab("RMSE test")+
+        ylab("Logloss test")+
         xlab("Model")+
         facet_wrap(~mvn_dim,scales = "free_y")+
         theme_classic()+
@@ -42,7 +42,7 @@ crps_plot <- result_df %>% filter(metric == "acc_test") %>%
         mutate(mvn_dim = as.factor(mvn_dim)) %>%
         ggplot()+
         geom_boxplot(mapping = aes(x = model, y = value))+
-        ylab("CRPS test")+
+        ylab("ACC test")+
         xlab("Model")+
         facet_wrap(~mvn_dim,scales = "free_y")+
         theme_classic()+

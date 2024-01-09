@@ -227,7 +227,7 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
         y <- matrix(0, nrow = n, ncol = mvn_dim)
         y_true <- matrix(0, nrow = n, ncol = mvn_dim)
         z <- matrix(0, nrow = n, ncol = mvn_dim)
-        p <- matrix(0, nrow = n, ncol = mvn_dim)
+        p_true <- matrix(0, nrow = n, ncol = mvn_dim)
         if (mvn_dim == 3) {
                 z_true <- cbind(z1, z2, z3)
                 for (i in 1:n) {
@@ -235,7 +235,7 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
                                                                               mvn_dim), sigma = Sigma)
                         y[i, ] <- (z[i, ] > 0)
                         y_true[i, ] <- (z_true[i, ] > 0)
-                        p[i, ] <- pnorm(z[i, ])
+                        p_true[i, ] <- pnorm(z_true[i, ])
                 }
         }
         else if (mvn_dim == 2) {
@@ -245,11 +245,11 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
                                                                               mvn_dim), sigma = Sigma)
                         y[i, ] <- (z[i, ] > 0)
                         y_true[i, ] <- (z_true[i, ] > 0)
-                        p[i, ] <- pnorm(z[i, ])
+                        p_true[i, ] <- pnorm(z_true[i, ])
                 }
         }
         return(list(x = data.frame(x), y = y, z = z, z_true = z_true, y_true = y_true,
-                    p = p, Sigma = Sigma))
+                    p_true = p_true, Sigma = Sigma))
 
 }
 
@@ -322,7 +322,7 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
      y <- matrix(0,nrow = n,ncol = mvn_dim)
      y_true <- matrix(0,nrow = n, ncol = mvn_dim)
      z <- matrix(0, nrow = n, ncol = mvn_dim)
-     p_ <- matrix(0, nrow = n, ncol = mvn_dim)
+     p_true <- matrix(0, nrow = n, ncol = mvn_dim)
 
      if(mvn_dim==3){
           z_true <- cbind(z1,z2,z3)
@@ -339,7 +339,7 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
                z[i,] <- z_true[i,] + mvnfast::rmvn(n = 1,mu = rep(0,mvn_dim),sigma = Sigma)
                y[i,] <- (z[i,]>0)
                y_true[i,] <- (z_true[i,]>0)
-               p_[i,] <- pnorm(z[i,])
+               p_true[i,] <- pnorm(z_true[i,])
           }
      }
 
@@ -357,7 +357,7 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
                   y = y,
                   z_true = z_true,
                   y_true = y_true,
-                  p = p_,
+                  p_true = p_true,
                   Sigma = Sigma))
 }
 
