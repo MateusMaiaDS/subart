@@ -1149,18 +1149,30 @@ void updateMuPredictions(Node* tree, modelParam &data,
                 // Iterating over the training.rows
                 for(int ii = 0; ii < for_size_ ; ii++){
 
-                        // Updating for the training samples
-                        if(t_nodes[i]->train_index[ii] == -1){
+
+                        // Avoiding memory crashing of checking ->train_index[ii]
+                        if(ii >= data.x_train.n_rows){
                                 update_train_ = false;
+                        } else {
+                                // Updating for the training samples
+                                if(t_nodes[i]->train_index[ii] == -1){
+                                        update_train_ = false;
+                                }
                         }
+
+                        // Avoiding memory crashing of checking ->test_index[ii]
+                        if(ii >= data.x_test.n_rows){
+                                update_test_ = false;
+                        } else {
+                                // Updating for the test samples
+                                if(t_nodes[i]->test_index[ii] == -1){
+                                        update_test_ = false;
+                                }
+                        }
+
 
                         if(update_train_){
                                 current_prediction_train[t_nodes[i]->train_index[ii]] = t_nodes[i] -> mu;
-                        }
-
-                        // Updating for the test samples
-                        if(t_nodes[i]->test_index[ii] == -1){
-                                update_test_ = false;
                         }
 
 
@@ -1176,6 +1188,7 @@ void updateMuPredictions(Node* tree, modelParam &data,
                         if(update_test_){
                                 current_prediction_test[t_nodes[i]->test_index[ii]] = t_nodes[i] -> mu;
                         }
+
 
                 }
         }
