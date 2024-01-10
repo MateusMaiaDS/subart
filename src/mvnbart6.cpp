@@ -1158,24 +1158,25 @@ void updateMuPredictions(Node* tree, modelParam &data,
                                 current_prediction_train[t_nodes[i]->train_index[ii]] = t_nodes[i] -> mu;
                         }
 
-
-                        if(t_nodes[i]->n_leaf_test == 0 ){
-                                continue;
-                        }
-
                         // Updating for the test samples
                         if(t_nodes[i]->test_index[ii] == -1){
                                 update_test_ = false;
+                        }
+
+
+                        // Getting out of the for if necessary
+                        if(!(update_train_) & !(update_test_)){
+                                break; // Get out from the for
+                        }
+
+                        if(t_nodes[i]->n_leaf_test == 0 ){
+                                continue;
                         }
 
                         if(update_test_){
                                 current_prediction_test[t_nodes[i]->test_index[ii]] = t_nodes[i] -> mu;
                         }
 
-                        // Getting out of the for if necessary
-                        if(!(update_train_) & !(update_test_)){
-                                break; // Get out from the for
-                        }
                 }
         }
 }

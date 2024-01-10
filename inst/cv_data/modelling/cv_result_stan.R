@@ -191,6 +191,6 @@ for(i in 1:n_rep){
 }
 
 
-# Saving the results
-saveRDS(object = result, file = paste0("inst/cv_data/",task_,"/result/STAN_",sim_,"_",task_,"_n_",n_,"_p_",p_,
-                                       "_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
+# # Saving the results
+# saveRDS(object = result, file = paste0("inst/cv_data/",task_,"/result/STAN_",sim_,"_",task_,"_n_",n_,"_p_",p_,
+#                                        "_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
