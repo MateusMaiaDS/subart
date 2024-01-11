@@ -50,7 +50,8 @@ mvnbart <- function(x_train,
                   usequants = FALSE,
                   m = 20, # Degrees of freed for the classification setting.
                   varimportance = TRUE,
-                  specify_variables = NULL # Specify variables for each dimension (j) by name or index for.
+                  specify_variables = NULL, # Specify variables for each dimension (j) by name or index for.,
+                  diagnostic = TRUE # Calculates the Effective Sample size for the covariance and correlation parameters
                   ) {
 
 
@@ -351,6 +352,13 @@ mvnbart <- function(x_train,
                      var_importance <- NULL
              }
 
+             # Calculate the ESS for all parameters throw a warning if any of them is smaller than half of the MCMC samples
+             if(diagnostic){
+
+                     diagnostic_bool = FALSE
+
+                     for(i in 1:)
+             }
              list_obj_ <- list(y_hat = y_train_post,
                   y_hat_test = y_test_post,
                   y_hat_mean = y_mat_mean,

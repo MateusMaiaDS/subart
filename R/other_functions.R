@@ -6,6 +6,39 @@ base_dummyVars <- function(df) {
         return(list(continuousVars = names(df)[num_cols], facVars = names(df)[factor_cols]))
 }
 
+# functions ####
+# ESS function
+spectrum0.ar <- function (x){
+        x <- matrix(x, ncol = 1)
+        v0 <- order <- numeric(ncol(x))
+        names(v0) <- names(order) <- colnames(x)
+        z <- 1:nrow(x)
+        for (i in 1:ncol(x)) {
+                lm.out <- lm(x[, i] ~ z)
+                if (identical(all.equal(sd(residuals(lm.out)), 0), TRUE)) {
+                        v0[i] <- 0
+                        order[i] <- 0
+                }
+                else {
+                        ar.out <- ar(x[, i], aic = TRUE)
+                        v0[i] <- ar.out$var.pred/(1 - sum(ar.out$ar))^2
+                        order[i] <- ar.out$order
+                }
+        }
+        return(list(spec = v0, order = order))
+}
+
+ESS <- function (x){
+        if(!is.matrix(x)){
+                x <- matrix(x)
+                warning("The chain was converted into a matrix of 1 column.")
+        }
+        spec <- spectrum0.ar(x)$spec
+        ans <- ifelse(spec == 0, 0, nrow(x) * apply(x, 2, var)/spec)
+        return(ans)
+}
+
+
 # Normalize BART function (Same way ONLY THE COVARIATE NOW)
 normalize_covariates_bart <- function(y, a = NULL, b = NULL) {
 
