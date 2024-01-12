@@ -356,9 +356,29 @@ mvnbart <- function(x_train,
              if(diagnostic){
 
                      diagnostic_bool = FALSE
+                     ESS_val <- matrix(NA, nrow = nrow(Sigma_post), ncol = ncol(Sigma_post))
+                     ESS_warn <- FALSE
+                     for(i in 1:nrow(Sigma_post)){
+                             ESS_val[i,i] <- ESS(x = Sigma_post[i,i,])
+                             j = i
+                             while(j < nrow(Sigma_post)){
+                                     j = j+1
+                                     ESS_val[i,j] < ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
+                                     if(ESS_val[i,j]<round(n_mcmc/2,digits = 0)){
+                                        ESS_warn <- TRUE
+                                     }
+                                     print(j)
+                             }
+                     }
 
-                     for(i in 1:)
+             } else {
+                     ESS_val <- NULL
              }
+
+             if(ESS_warn){
+                     warning("A ESS less than 1,000 was obtanied. Verify the traceplots and adjust the priors to improve the samplers.")
+             }
+
              list_obj_ <- list(y_hat = y_train_post,
                   y_hat_test = y_test_post,
                   y_hat_mean = y_mat_mean,
@@ -381,7 +401,8 @@ mvnbart <- function(x_train,
                               n_burn = n_burn),
                   data = list(x_train = x_train,
                               y_mat = y_mat,
-                              x_test = x_test))
+                              x_test = x_test),
+                  ESS = ESS_val)
 
              class(list_obj_) <- "mvnbart-probit"
      } else {
@@ -396,6 +417,33 @@ mvnbart <- function(x_train,
                      }
              } else {
                      var_importance <- NULL
+             }
+
+             # Calculate the ESS for all parameters throw a warning if any of them is smaller than half of the MCMC samples
+             if(diagnostic){
+
+                     diagnostic_bool = FALSE
+                     ESS_val <- matrix(NA, nrow = nrow(Sigma_post), ncol = ncol(Sigma_post))
+                     ESS_warn <- FALSE
+                     for(i in 1:nrow(Sigma_post)){
+                             ESS_val[i,i] <- ESS(x = Sigma_post[i,i,])
+                             j = i
+                             while(j < nrow(Sigma_post)){
+                                     j = j+1
+                                     ESS_val[i,j] < ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
+                                     if(ESS_val[i,j]<round(n_mcmc/2,digits = 0)){
+                                             ESS_warn <- TRUE
+                                     }
+                                     print(j)
+                             }
+                     }
+
+             } else {
+                     ESS_val <- NULL
+             }
+
+             if(ESS_warn){
+                     warning("A ESS less than 1,000 was obtanied. Verify the traceplots and adjust the priors to improve the samplers.")
              }
 
              list_obj_ <- list(y_hat = y_train_post,
@@ -420,7 +468,9 @@ mvnbart <- function(x_train,
                               n_burn = n_burn),
                   data = list(x_train = x_train,
                               y_mat = y_mat,
-                              x_test = x_test))
+                              x_test = x_test),
+                  ESS = ESS_val)
+
              class(list_obj_) <- "mvnbart"
      }
 
