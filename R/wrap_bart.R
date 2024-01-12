@@ -348,6 +348,8 @@ mvnbart <- function(x_train,
                                      var_importance[ii,,jj] <- apply(bart_obj[[8]][ii][[1]][,,jj],2,sum)
                              }
                      }
+
+                     class(var_importance) <- "varimportance"
              } else {
                      var_importance <- NULL
              }
@@ -359,15 +361,14 @@ mvnbart <- function(x_train,
                      ESS_val <- matrix(NA, nrow = nrow(Sigma_post), ncol = ncol(Sigma_post))
                      ESS_warn <- FALSE
                      for(i in 1:nrow(Sigma_post)){
-                             ESS_val[i,i] <- ESS(x = Sigma_post[i,i,])
+                             # ESS_val[i,i] <- ESS(x = Sigma_post[i,i,]) # For classification there's no sample
                              j = i
                              while(j < nrow(Sigma_post)){
                                      j = j+1
-                                     ESS_val[i,j] <- ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
-                                     if(ESS_val[i,j]<round(n_mcmc/2,digits = 0)){
+                                     ESS_val[i,j] <- ESS_val[j,i] <- ESS(x = Sigma_post[i,j,]/(sqrt(Sigma_post[i,i,])*sqrt(Sigma_post[j,j,])))
+                                     if(ESS_val[i,j]<round((n_mcmc-n_burn)/2,digits = 0)){
                                         ESS_warn <- TRUE
                                      }
-                                     print(j)
                              }
                      }
 
@@ -376,8 +377,9 @@ mvnbart <- function(x_train,
              }
 
              if(ESS_warn){
-                     warning("A ESS less than 1,000 was obtanied. Verify the traceplots and adjust the priors to improve the samplers.")
+                     warning(paste0("A ESS less than ",round((n_mcmc-n_burn)/2,digits = 0)," was obtanied. Verify the traceplots and adjust the priors to improve the sampling."))
              }
+
 
              list_obj_ <- list(y_hat = y_train_post,
                   y_hat_test = y_test_post,
@@ -415,6 +417,9 @@ mvnbart <- function(x_train,
                                 var_importance[ii,,jj] <- apply(bart_obj[[7]][ii][[1]][,,jj],2,sum)
                              }
                      }
+
+                     class(var_importance) <- "varimportance"
+
              } else {
                      var_importance <- NULL
              }
@@ -426,15 +431,14 @@ mvnbart <- function(x_train,
                      ESS_val <- matrix(NA, nrow = nrow(Sigma_post), ncol = ncol(Sigma_post))
                      ESS_warn <- FALSE
                      for(i in 1:nrow(Sigma_post)){
-                             ESS_val[i,i] <- ESS(x = Sigma_post[i,i,])
+                             ESS_val[i,i] <- ESS(x = sqrt(Sigma_post[i,i,]))
                              j = i
                              while(j < nrow(Sigma_post)){
                                      j = j+1
-                                     ESS_val[i,j] <- ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
-                                     if(ESS_val[i,j]<round(n_mcmc/2,digits = 0)){
+                                     ESS_val[i,j] <- ESS_val[j,i] <- ESS(x = Sigma_post[i,j,]/(sqrt(Sigma_post[i,i,])*sqrt(Sigma_post[j,j,])))
+                                     if(ESS_val[i,j]<round((n_mcmc-n_burn)/2,digits = 0)){
                                              ESS_warn <- TRUE
                                      }
-                                     print(j)
                              }
                      }
 
@@ -443,7 +447,7 @@ mvnbart <- function(x_train,
              }
 
              if(ESS_warn){
-                     warning("A ESS less than 1,000 was obtanied. Verify the traceplots and adjust the priors to improve the samplers.")
+                     warning(paste0("A ESS less than ",round((n_mcmc-n_burn)/2,digits = 0)," was obtanied. Verify the traceplots and adjust the priors to improve the sampling."))
              }
 
              list_obj_ <- list(y_hat = y_train_post,

@@ -3,11 +3,11 @@ rm(list=ls())
 library(doParallel)
 devtools::load_all()
 set.seed(42)
-n_ <- 50
+n_ <- 500
 p_ <- 10
 n_tree_ <- 50
 mvn_dim_ <- 2
-task_ <- "regression" # For this it can be either 'classification' or 'regression'
+task_ <- "classification" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
 
@@ -55,12 +55,12 @@ Sigma_ <- cv_element_$train$Sigma
 
 # Doing the same for the MVN-BART
 mvbart_mod <- mvnbart(x_train = x_train,y_mat = y_train,x_test = x_test,
-                      n_tree = n_tree_,n_mcmc = 2500,n_burn = 500,df = 2,
+                      n_tree = n_tree_,n_mcmc = 2500,n_burn = 500,df = 10,
                       m = nrow(x_train))
 
 
 
-par(mfrow=c(2,3))
+par(mfrow=c(1,3))
 sqrt(mvbart_mod$Sigma_post[1,1,]) %>% plot(type = 'l', main = expression(sigma[1]))
 sqrt(mvbart_mod$Sigma_post[2,2,]) %>% plot(type = 'l', main = expression(sigma[2]))
 # sqrt(mvbart_mod$Sigma_post[3,3,]) %>% plot(type = 'l', main = expression(sigma[3]))
@@ -71,4 +71,5 @@ sqrt(mvbart_mod$Sigma_post[2,2,]) %>% plot(type = 'l', main = expression(sigma[2
 
 rho1 <- mvbart_mod$Sigma_post[1,2,]/(sqrt(mvbart_mod$Sigma_post[2,2,])*sqrt(mvbart_mod$Sigma_post[1,1,]))
 
+ESS(sqrt(mvbart_mod$Sigma_post[1,1,]))
 ESS(rho1)

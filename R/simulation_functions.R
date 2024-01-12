@@ -29,7 +29,7 @@ sim_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
      } else {
           sigma1 <- 1
           sigma2 <- 10
-          rho12 <- 0.9 # Original is 0.75
+          rho12 <- 0.75 # Original is 0.75
           Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
           Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
           determinant(Sigma)$modulus[1]
