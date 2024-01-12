@@ -30,8 +30,8 @@ spectrum0.ar <- function (x){
 
 ESS <- function (x){
         if(!is.matrix(x)){
-                x <- matrix(x)
-                warning("The chain was converted into a matrix of 1 column.")
+                x <- matrix(x, ncol = 1)
+                # warning("The chain was converted into a matrix of 1 column.")
         }
         spec <- spectrum0.ar(x)$spec
         ans <- ifelse(spec == 0, 0, nrow(x) * apply(x, 2, var)/spec)

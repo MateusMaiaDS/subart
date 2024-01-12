@@ -363,7 +363,7 @@ mvnbart <- function(x_train,
                              j = i
                              while(j < nrow(Sigma_post)){
                                      j = j+1
-                                     ESS_val[i,j] < ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
+                                     ESS_val[i,j] <- ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
                                      if(ESS_val[i,j]<round(n_mcmc/2,digits = 0)){
                                         ESS_warn <- TRUE
                                      }
@@ -430,7 +430,7 @@ mvnbart <- function(x_train,
                              j = i
                              while(j < nrow(Sigma_post)){
                                      j = j+1
-                                     ESS_val[i,j] < ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
+                                     ESS_val[i,j] <- ESS_val[j,i] <- ESS(x = Sigma_post[i,j,])
                                      if(ESS_val[i,j]<round(n_mcmc/2,digits = 0)){
                                              ESS_warn <- TRUE
                                      }
