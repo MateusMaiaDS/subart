@@ -20,7 +20,7 @@ spectrum0.ar <- function (x){
                         order[i] <- 0
                 }
                 else {
-                        ar.out <- ar(x[, i], aic = TRUE)
+                        ar.out <- stats::ar(x[, i], aic = TRUE)
                         v0[i] <- ar.out$var.pred/(1 - sum(ar.out$ar))^2
                         order[i] <- ar.out$order
                 }
