@@ -1,22 +1,4 @@
----
-output: github_document
----
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  out.width = "100%"
-)
-```
-
-# suBART
-
-<!-- badges: start -->
-<img src="man/figures/logo.png" width="240" height="276" align="right"/>
-<!-- badges: end -->
+# suBART <img src="man/figures/logo.png" align="right" height="120" />
 
 suBART is an R-implementation for an extesion for Bayesian Additive Regression Trees (BART) for multiple outcomes, based on the seemingly unrelated regression (SUR) paradigm.
 
