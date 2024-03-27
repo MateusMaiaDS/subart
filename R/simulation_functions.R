@@ -47,7 +47,7 @@ sim_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
      }
 
      # Generate the x matrix
-     x <- matrix(runif(p*n), ncol = p)
+     x <- matrix(stats::runif(p*n), ncol = p)
      y1 <- 10*sin(x[,1]*x[,2]*pi) + 20*(x[,3]-0.5)^2
      y2 <- 8*x[,4] + 20*sin(x[,1]*pi)
 
@@ -128,13 +128,13 @@ sim_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
      }
 
      # Generate the x matrix
-     x1 <- matrix(runif(5*n), ncol = 5)
+     x1 <- matrix(stats::runif(5*n), ncol = 5)
      y1 <- 10*sin(x1[,1]*x1[,2]*pi) + 20*(x1[,3]-0.5)^2 + 10*x1[,4] + 5*x1[,5]
 
-     x2 <- cbind(runif(n = n,max = 100),
-                 runif(n = n,min = 40*pi,max = 560*pi),
-                 runif(n = n,min = 0,max = 1),
-                 runif(n = n,min = 1,max = 11))
+     x2 <- cbind(stats::runif(n = n,max = 100),
+                 stats::runif(n = n,min = 40*pi,max = 560*pi),
+                 stats::runif(n = n,min = 0,max = 1),
+                 stats::runif(n = n,min = 1,max = 11))
 
      y2 <- (x2[,1]^2 + (x2[,2]*x2[,3]-(1/(x2[,2]*x2[,4])))^(2))^(0.5)
 
@@ -160,7 +160,7 @@ sim_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
 
      # Generating the remaining covariates variables
      if(p > 9 ){
-          x_noise <- matrix(runif(n = n*(p-9)),ncol = (p-9))
+          x_noise <- matrix(stats::runif(n = n*(p-9)),ncol = (p-9))
           x <- cbind(x1,x2,x_noise)
      } else {
           x <- cbind(x1,x2)
@@ -218,7 +218,7 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
         if (!all(eigen(Sigma)$values > 0)) {
                 stop("Insert a positive-semidefined matrix")
         }
-        x <- matrix(runif(p * n, min = -1, max = 1), ncol = p)
+        x <- matrix(stats::runif(p * n, min = -1, max = 1), ncol = p)
         z1 <- sin(x[, 1] * x[, 2] * pi) + x[, 3]^3
         z2 <- -1 + 2 * x[,1]*x[,4] + exp(x[,5])
         if (mvn_dim == 3) {
@@ -235,7 +235,7 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
                                                                               mvn_dim), sigma = Sigma)
                         y[i, ] <- (z[i, ] > 0)
                         y_true[i, ] <- (z_true[i, ] > 0)
-                        p_true[i, ] <- pnorm(z_true[i, ])
+                        p_true[i, ] <- stats::pnorm(z_true[i, ])
                 }
         }
         else if (mvn_dim == 2) {
@@ -245,7 +245,7 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
                                                                               mvn_dim), sigma = Sigma)
                         y[i, ] <- (z[i, ] > 0)
                         y_true[i, ] <- (z_true[i, ] > 0)
-                        p_true[i, ] <- pnorm(z_true[i, ])
+                        p_true[i, ] <- stats::pnorm(z_true[i, ])
                 }
         }
         return(list(x = data.frame(x), y = y, z = z, z_true = z_true, y_true = y_true,
@@ -304,13 +304,13 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
      }
 
      # Generate the x matrix
-     x1 <- matrix(runif(5*n), ncol = 5)
+     x1 <- matrix(stats::runif(5*n), ncol = 5)
      z1 <- 10*sin(x1[,1]*x1[,2]*pi) - 20*(x1[,3]-0.5)^2 - 10*x1[,4] + 5*x1[,5]
 
-     x2 <- cbind(runif(n = n,max = 100),
-                 runif(n = n,min = 40*pi,max = 560*pi),
-                 runif(n = n,min = 0,max = 1),
-                 runif(n = n,min = 1,max = 11))
+     x2 <- cbind(stats::runif(n = n,max = 100),
+                 stats::runif(n = n,min = 40*pi,max = 560*pi),
+                 stats::runif(n = n,min = 0,max = 1),
+                 stats::runif(n = n,min = 1,max = 11))
 
      z2 <- cos(x2[,1]^2 + (x2[,2]*x2[,3]-(1/(x2[,2]*x2[,4]))))
 
@@ -330,7 +330,7 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
                z[i,] <- z_true[i,] + mvnfast::rmvn(n = 1,mu = rep(0,mvn_dim),sigma = Sigma)
                y[i,] <- (z[i,]>0)
                y_true[i,] <- (z_true[i,]>0)
-               p_[i,] <- pnorm(z[i,])
+               p_[i,] <- stats::pnorm(z[i,])
           }
 
      } else if(mvn_dim==2){
@@ -339,13 +339,13 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
                z[i,] <- z_true[i,] + mvnfast::rmvn(n = 1,mu = rep(0,mvn_dim),sigma = Sigma)
                y[i,] <- (z[i,]>0)
                y_true[i,] <- (z_true[i,]>0)
-               p_true[i,] <- pnorm(z_true[i,])
+               p_true[i,] <- stats::pnorm(z_true[i,])
           }
      }
 
      # Generating the remaining covariates variables
      if(p > 9 ){
-          x_noise <- matrix(runif(n = n*(p-9)),ncol = (p-9))
+          x_noise <- matrix(stats::runif(n = n*(p-9)),ncol = (p-9))
           x <- cbind(x1,x2,x_noise)
      } else {
           x <- cbind(x1,x2)

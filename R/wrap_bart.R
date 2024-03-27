@@ -1,5 +1,5 @@
 #' Multivariate Normal Bayesian Additive Regression trees.
-#' @useDynLib mvnbart6
+#' @useDynLib suBART
 #' @importFrom Rcpp sourceCpp
 #'
 #' @description
@@ -33,8 +33,9 @@
 #' @param m Hyperparameter used in the definition of the prior setting of the correlation matrix for the Probit-Multivariate approach.
 #' @param varimportance Boolean; if true returns a matrix with \code{n_mcmc} rows and \eqn{d} columns corresponding to the total sum of number of times that a variable \eqn{j} was used among all trees of a MCMC iteration.
 #' @param specify_variables a list of numeric vectors where each respective element contains the indexes of the covariates allowed to be selected for the set of trees for the respective respose \eqn{Y_{j}}. The default is \code{NULL} and allow to all covariates from \eqn{X} to be selected for all trees.
+#' @param diagnostic a boolean to compute or not the ESS for the posterior samples of the \eqn{\boldsymbol{\Sigma}}
 #' @export
-mvnbart <- function(x_train,
+suBART <- function(x_train,
                   y_mat,
                   x_test,
                   n_tree = 100,

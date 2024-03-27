@@ -14,8 +14,8 @@ spectrum0.ar <- function (x){
         names(v0) <- names(order) <- colnames(x)
         z <- 1:nrow(x)
         for (i in 1:ncol(x)) {
-                lm.out <- lm(x[, i] ~ z)
-                if (identical(all.equal(sd(residuals(lm.out)), 0), TRUE)) {
+                lm.out <- stats::lm(x[, i] ~ z)
+                if (identical(all.equal(stats::sd(stats::residuals(lm.out)), 0), TRUE)) {
                         v0[i] <- 0
                         order[i] <- 0
                 }
@@ -34,7 +34,7 @@ ESS <- function (x){
                 # warning("The chain was converted into a matrix of 1 column.")
         }
         spec <- spectrum0.ar(x)$spec
-        ans <- ifelse(spec == 0, 0, nrow(x) * apply(x, 2, var)/spec)
+        ans <- ifelse(spec == 0, 0, nrow(x) * apply(x, 2, stats::var)/spec)
         return(ans)
 }
 
@@ -98,8 +98,8 @@ pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications =
         pi_upper_bd <- numeric(n_test)
 
         for(i in 1:n_test){
-                pi_lower_bd[i] <- quantile(c(all_predictions_samples[i,]), (1-prob)/2)
-                pi_upper_bd[i] <- quantile(c(all_predictions_samples[i,]), (1+prob)/2)
+                pi_lower_bd[i] <- stats::quantile(c(all_predictions_samples[i,]), (1-prob)/2)
+                pi_upper_bd[i] <- stats::quantile(c(all_predictions_samples[i,]), (1+prob)/2)
         }
 
 
@@ -229,8 +229,8 @@ ci_coverage <- function(y_,
                         prob_ = 0.5){
 
         # Calculating the coverage based on the mean values
-        up_ci <- y_hat_ + sd_*qnorm(p = 1-prob_/2)
-        low_ci <- y_hat_ + sd_*qnorm(p = prob_/2)
+        up_ci <- y_hat_ + sd_*stats::qnorm(p = 1-prob_/2)
+        low_ci <- y_hat_ + sd_*stats::qnorm(p = prob_/2)
 
         ci_cov <- mean((y_<= up_ci)&(y_ >= low_ci))
 

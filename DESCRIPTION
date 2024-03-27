@@ -1,11 +1,10 @@
-Package: mvnbart6
+Package: suBART
 Type: Package
-Title: What the Package Does (Title Case)
+Title: suBART: general extension for Bayesian Additive Regression (BART) for multiple outcomes using an nonparametric version of seemingly unrelated regression
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R: c(person("Mateus", "Maia", email = "mateus.maiamarques.2021@mumail.ie", role = c("aut","cre"), comment = c(ORCID = "0000-0001-7056-386X")),
+            person("Esser", "Jonas", email = "j.esser@vu.nl", role = c("cte")))
+Description: An expanded version of BART that accommodates multiple outcomes through the seemingly unrelated approach, enabling each distinct response to be linked with a unique ensemble of trees. The suBART model is designed to handle both binary and continuous multivariate responses.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
