@@ -1,4 +1,4 @@
-# suBART <img src="man/figures/logo.png" align="right" height="120" />
+# suBART <img src="man/figures/logo.png" align="right" height="160" />
 
 suBART is an R-implementation for an extesion for Bayesian Additive Regression Trees (BART) for multiple outcomes, based on the seemingly unrelated regression (SUR) paradigm.
 
