@@ -3,7 +3,7 @@
 #' @importFrom Rcpp sourceCpp
 #'
 #' @description
-#' \code{mvnbart()} function models a Bayesian Additive Regression trees model considering the Multivariate Normal (MVN) distribution
+#' \code{suBART()} function models a Bayesian Additive Regression trees model considering the Multivariate Normal (MVN) distribution
 #' from the target dependent variable \eqn{Y_{i} \in \mathbb{R}^{d}}.
 #'
 #' @details
@@ -12,8 +12,8 @@
 #'
 #' @returns
 #' In case of a continuous response the model returns
-#' \code{mvnbart} object with the model predictions and parameters for the standard MVN. For the binary-classification problems the probit
-#' Probit-MVN approach is used, and returns the \code{mvnbart} object.
+#' \code{suBART} object with the model predictions and parameters for the standard MVN. For the binary-classification problems the probit
+#' Probit-MVN approach is used, and returns the \code{suBART} object.
 #'
 #'
 #' @param x_train A \code{data.frame} of the training data covariates.
@@ -407,7 +407,7 @@ suBART <- function(x_train,
                               x_test = x_test),
                   ESS = ESS_val)
 
-             class(list_obj_) <- "mvnbart-probit"
+             class(list_obj_) <- "suBART-probit"
      } else {
 
              # Case if storing a variable selection or not
@@ -476,7 +476,7 @@ suBART <- function(x_train,
                               x_test = x_test),
                   ESS = ESS_val)
 
-             class(list_obj_) <- "mvnbart"
+             class(list_obj_) <- "suBART"
      }
 
      # Return the list with all objects and parameters
