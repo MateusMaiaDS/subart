@@ -52,16 +52,6 @@ normalize_covariates_bart <- function(y, a = NULL, b = NULL) {
      return(y)
 }
 
-# Calculating CRPS from (https://arxiv.org/pdf/1709.04743.pdf)
-crps <- function(y,means,sds){
-
-        # scaling the observed y
-        z <- (y-means)/sds
-
-        crps_vector <- sds*(z*(2*stats::pnorm(q = z,mean = 0,sd = 1)-1) + 2*stats::dnorm(x = z,mean = 0,sd = 1) - 1/(sqrt(pi)) )
-
-        return(list(CRPS = mean(crps_vector), crps = crps_vector))
-}
 
 # Coverage for the prediction intervals
 pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications = 1000){
