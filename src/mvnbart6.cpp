@@ -1223,7 +1223,7 @@ void updateSigma(arma::mat &y_mat_hat,
         S = residuals_mat.t()*residuals_mat;
 
         // Updating sigma
-        data.Sigma = arma::iwishrnd((data.S_0_wish+S),data.nu+data.y_mat.n_rows);
+        data.Sigma = arma::iwishrnd((data.S_0_wish+S),data.nu + data.y_mat.n_cols - 1 +data.y_mat.n_rows);
 
 }
 
