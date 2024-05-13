@@ -52,7 +52,7 @@ suBART <- function(x_train,
                   usequants = FALSE,
                   m = 20, # Degrees of freed for the classification setting.
                   varimportance = TRUE,
-                  hier_prior_bool = FALSE, # Use a hierachical prior or not;
+                  hier_prior_bool = TRUE, # Use a hierachical prior or not;
                   specify_variables = NULL, # Specify variables for each dimension (j) by name or index for.,
                   diagnostic = TRUE # Calculates the Effective Sample size for the covariance and correlation parameters
                   ) {
@@ -248,6 +248,7 @@ suBART <- function(x_train,
                      rate_tau <- (lambda*df)/2
 
                      S_0_wish <- 2*df*diag(c(rate_tau))
+
              } else {
                      A_j <- numeric()
                      for(i in 1:length(nsigma)){
