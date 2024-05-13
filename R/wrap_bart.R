@@ -229,20 +229,34 @@ suBART <- function(x_train,
              # Define parameters
              df <- nu + ncol(y_mat_scale) - 1
 
-             A_j <- numeric()
+             # Selecting hypera-parmeters for the t-distribution case
+             if(hier_prior_bool){
+                     A_j <- numeric()
 
-             for(i in 1:length(nsigma)){
+                     for(i in 1:length(nsigma)){
+                             # Calculating lambda
+                             A_j[i] <- stats::optim(par = 0.01, f = function(A){(sigquant - phalft(nsigma[i], A, nu)^2)},
+                                                    method = "Brent",lower = 0.00001,upper = 100)$par
+                     }
+
                      # Calculating lambda
-                     A_j[i] <- stats::optim(par = 0.01, f = function(A){(sigquant - phalft(nsigma[i], A, nu)^2)},
-                                            method = "Brent",lower = 0.00001,upper = 100)$par
+                     qchi <- stats::qchisq(p = 1-sigquant,df = df,lower.tail = 1,ncp = 0)
+                     lambda <- (nsigma*nsigma*qchi)/df
+                     rate_tau <- (lambda*df)/2
+
+                     S_0_wish <- 2*df*diag(c(rate_tau))
+             } else {
+                     A_j <- numeric()
+                     for(i in 1:length(nsigma)){
+                             A_j[i] <- stats::optim(par = 0.01, f = function(A){(sigquant - stats::pgamma(q = 1/(nsigma[i]^2),
+                                                                                                              shape = nu/2, rate = A/2,
+                                                                                                              lower.tail = FALSE))^2},
+                                                        method = "Brent",lower = 0.00001,upper = 100)$par
+                     }
+
+                     S_0_wish <- diag(A_j)
              }
 
-             # Calculating lambda
-             qchi <- stats::qchisq(p = 1-sigquant,df = df,lower.tail = 1,ncp = 0)
-             lambda <- (nsigma*nsigma*qchi)/df
-             rate_tau <- (lambda*df)/2
-
-             S_0_wish <- 2*df*diag(c(rate_tau))
 
              # Call the bart function
              if(is.null(Sigma_init)){

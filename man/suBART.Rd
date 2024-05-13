@@ -14,13 +14,14 @@ suBART(
   n_burn = 500,
   alpha = 0.95,
   beta = 2,
-  df = 3,
+  nu = 3,
   sigquant = 0.9,
   kappa = 2,
   numcut = 100L,
   usequants = FALSE,
   m = 20,
   varimportance = TRUE,
+  hier_prior_bool = FALSE,
   specify_variables = NULL,
   diagnostic = TRUE
 )
@@ -44,8 +45,6 @@ suBART(
 
 \item{beta}{The base parameter used in tree prior.}
 
-\item{df}{Degrees of freedom for the residuals variance prior. Not used when \eqn{Y} is a binary outcome.}
-
 \item{sigquant}{Quantile used to define the residuals variance. Remind that the prior definition is based on \eqn{P(\sigma^{(j)} < \hat{\sigma}^{(j)})} where \eqn{\hat{\sigma}^{(j)}} is a "rough data-based estimation" for example, the sample variance of the observed \eqn{y^{(j)}} values.}
 
 \item{kappa}{Hyper-parameter from the \eqn{\mu_{t\ell}^{(j)}} (Chipman et. al 2010). Such that \eqn{\sigma} = 0.25}
@@ -61,14 +60,16 @@ suBART(
 \item{specify_variables}{a list of numeric vectors where each respective element contains the indexes of the covariates allowed to be selected for the set of trees for the respective respose \eqn{Y_{j}}. The default is \code{NULL} and allow to all covariates from \eqn{X} to be selected for all trees.}
 
 \item{diagnostic}{a boolean to compute or not the ESS for the posterior samples of the \eqn{\boldsymbol{\Sigma}}}
+
+\item{df}{Degrees of freedom for the residuals variance prior. Not used when \eqn{Y} is a binary outcome.}
 }
 \value{
 In case of a continuous response the model returns
-\code{mvnbart} object with the model predictions and parameters for the standard MVN. For the binary-classification problems the probit
-Probit-MVN approach is used, and returns the \code{mvnbart} object.
+\code{suBART} object with the model predictions and parameters for the standard MVN. For the binary-classification problems the probit
+Probit-MVN approach is used, and returns the \code{suBART} object.
 }
 \description{
-\code{mvnbart()} function models a Bayesian Additive Regression trees model considering the Multivariate Normal (MVN) distribution
+\code{suBART()} function models a Bayesian Additive Regression trees model considering the Multivariate Normal (MVN) distribution
 from the target dependent variable \eqn{Y_{i} \in \mathbb{R}^{d}}.
 }
 \details{
