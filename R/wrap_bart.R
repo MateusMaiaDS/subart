@@ -44,13 +44,15 @@ suBART <- function(x_train,
                   n_burn = 500,
                   alpha = 0.95,
                   beta = 2,
-                  df = 3,
+                  # df = 3, # The degrees of freedom are a function of nu, such as df = nu + d -1
+                  nu = 3,
                   sigquant = 0.9,
                   kappa = 2,
                   numcut = 100L, # Defining the grid of split rules
                   usequants = FALSE,
                   m = 20, # Degrees of freed for the classification setting.
                   varimportance = TRUE,
+                  hier_prior_bool = FALSE, # Use a hierachical prior or not;
                   specify_variables = NULL, # Specify variables for each dimension (j) by name or index for.,
                   diagnostic = TRUE # Calculates the Effective Sample size for the covariance and correlation parameters
                   ) {
@@ -213,7 +215,7 @@ suBART <- function(x_train,
              }
              mu_init <- apply(y_mat,2,mean)
 
-             nu <- df
+             df <- nu + ncol(y_mat_scale) - 1
              # No extra parameters are need to calculate for the class model
      } else {
              # Getting the naive sigma value
@@ -225,7 +227,7 @@ suBART <- function(x_train,
              }
 
              # Define parameters
-             nu <- df
+             df <- nu + ncol(y_mat_scale) - 1
 
              A_j <- numeric()
 
@@ -290,6 +292,7 @@ suBART <- function(x_train,
                                   update_Sigma,
                                   varimportance,
                                   sv_bool,
+                                  hier_prior_bool,
                                   sv_matrix)
      }
 

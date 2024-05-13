@@ -73,8 +73,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cppbart
-Rcpp::List cppbart(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double alpha, double beta, double nu, arma::mat S_0_wish, arma::vec A_j_vec, bool update_Sigma, bool var_selection_bool, bool sv_bool, arma::mat sv_matrix);
-RcppExport SEXP _suBART_cppbart(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP sv_matrixSEXP) {
+Rcpp::List cppbart(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double alpha, double beta, double nu, arma::mat S_0_wish, arma::vec A_j_vec, bool update_Sigma, bool var_selection_bool, bool sv_bool, bool hier_prior_bool, arma::mat sv_matrix);
+RcppExport SEXP _suBART_cppbart(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP hier_prior_boolSEXP, SEXP sv_matrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -97,8 +97,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type update_Sigma(update_SigmaSEXP);
     Rcpp::traits::input_parameter< bool >::type var_selection_bool(var_selection_boolSEXP);
     Rcpp::traits::input_parameter< bool >::type sv_bool(sv_boolSEXP);
+    Rcpp::traits::input_parameter< bool >::type hier_prior_bool(hier_prior_boolSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sv_matrix(sv_matrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(cppbart(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, sv_matrix));
+    rcpp_result_gen = Rcpp::wrap(cppbart(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -152,7 +153,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_suBART_wishart_loglikelihood", (DL_FUNC) &_suBART_wishart_loglikelihood, 3},
     {"_suBART_iwishart_loglikelihood", (DL_FUNC) &_suBART_iwishart_loglikelihood, 3},
     {"_suBART_log_dmvn", (DL_FUNC) &_suBART_log_dmvn, 2},
-    {"_suBART_cppbart", (DL_FUNC) &_suBART_cppbart, 20},
+    {"_suBART_cppbart", (DL_FUNC) &_suBART_cppbart, 21},
     {"_suBART_truncated_sample", (DL_FUNC) &_suBART_truncated_sample, 3},
     {"_suBART_cppbart_CLASS", (DL_FUNC) &_suBART_cppbart_CLASS, 20},
     {NULL, NULL, 0}

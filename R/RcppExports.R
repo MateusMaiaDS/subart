@@ -21,8 +21,8 @@ log_dmvn <- function(x, Sigma) {
     .Call('_suBART_log_dmvn', PACKAGE = 'suBART', x, Sigma)
 }
 
-cppbart <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, sv_matrix) {
-    .Call('_suBART_cppbart', PACKAGE = 'suBART', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, sv_matrix)
+cppbart <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix) {
+    .Call('_suBART_cppbart', PACKAGE = 'suBART', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix)
 }
 
 truncated_sample <- function(mu, left, sigma_) {
