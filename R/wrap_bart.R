@@ -219,8 +219,11 @@ suBART <- function(x_train,
              # No extra parameters are need to calculate for the class model
      } else {
              # Getting the naive sigma value
-             nsigma <- apply(y_mat_scale, 2, function(Y){naive_sigma(x = x_train_scale,y = Y)})
-
+             if(n > ncol(y_mat_scale)){
+                nsigma <- apply(y_mat_scale, 2, function(Y){naive_sigma(x = x_train_scale,y = Y)})
+             } else {
+                nsigma <- apply(y_mat_scale, 2, function(Y){sd(Y)})
+             }
              # Define the ensity function
              phalft <- function(x, A, nu){
                      return(2 * stats::pt(x/A, nu) - 1)
