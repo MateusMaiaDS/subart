@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // makeSigma
 arma::mat makeSigma(arma::vec sigma, int d);
-RcppExport SEXP _suBART_makeSigma(SEXP sigmaSEXP, SEXP dSEXP) {
+RcppExport SEXP _subart_makeSigma(SEXP sigmaSEXP, SEXP dSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +25,7 @@ END_RCPP
 }
 // makeSigmaInv
 arma::vec makeSigmaInv(arma::mat& Sigma);
-RcppExport SEXP _suBART_makeSigmaInv(SEXP SigmaSEXP) {
+RcppExport SEXP _subart_makeSigmaInv(SEXP SigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -36,7 +36,7 @@ END_RCPP
 }
 // wishart_loglikelihood
 double wishart_loglikelihood(const arma::mat& X, const arma::mat& Sigma, double nu);
-RcppExport SEXP _suBART_wishart_loglikelihood(SEXP XSEXP, SEXP SigmaSEXP, SEXP nuSEXP) {
+RcppExport SEXP _subart_wishart_loglikelihood(SEXP XSEXP, SEXP SigmaSEXP, SEXP nuSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -49,7 +49,7 @@ END_RCPP
 }
 // iwishart_loglikelihood
 double iwishart_loglikelihood(const arma::mat& X, const arma::mat& Sigma, double nu);
-RcppExport SEXP _suBART_iwishart_loglikelihood(SEXP XSEXP, SEXP SigmaSEXP, SEXP nuSEXP) {
+RcppExport SEXP _subart_iwishart_loglikelihood(SEXP XSEXP, SEXP SigmaSEXP, SEXP nuSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -62,7 +62,7 @@ END_RCPP
 }
 // log_dmvn
 double log_dmvn(arma::vec& x, arma::mat& Sigma);
-RcppExport SEXP _suBART_log_dmvn(SEXP xSEXP, SEXP SigmaSEXP) {
+RcppExport SEXP _subart_log_dmvn(SEXP xSEXP, SEXP SigmaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -74,7 +74,7 @@ END_RCPP
 }
 // cppbart
 Rcpp::List cppbart(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double alpha, double beta, double nu, arma::mat S_0_wish, arma::vec A_j_vec, bool update_Sigma, bool var_selection_bool, bool sv_bool, bool hier_prior_bool, arma::mat sv_matrix);
-RcppExport SEXP _suBART_cppbart(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP hier_prior_boolSEXP, SEXP sv_matrixSEXP) {
+RcppExport SEXP _subart_cppbart(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP hier_prior_boolSEXP, SEXP sv_matrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -105,7 +105,7 @@ END_RCPP
 }
 // truncated_sample
 double truncated_sample(double mu, bool left, double sigma_);
-RcppExport SEXP _suBART_truncated_sample(SEXP muSEXP, SEXP leftSEXP, SEXP sigma_SEXP) {
+RcppExport SEXP _subart_truncated_sample(SEXP muSEXP, SEXP leftSEXP, SEXP sigma_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -118,7 +118,7 @@ END_RCPP
 }
 // cppbart_CLASS
 Rcpp::List cppbart_CLASS(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double nu, double alpha, double beta, unsigned int m, bool update_sigma, bool var_selection_bool, bool tn_sampler, bool sv_bool, arma::mat sv_matrix);
-RcppExport SEXP _suBART_cppbart_CLASS(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP nuSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP mSEXP, SEXP update_sigmaSEXP, SEXP var_selection_boolSEXP, SEXP tn_samplerSEXP, SEXP sv_boolSEXP, SEXP sv_matrixSEXP) {
+RcppExport SEXP _subart_cppbart_CLASS(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP nuSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP mSEXP, SEXP update_sigmaSEXP, SEXP var_selection_boolSEXP, SEXP tn_samplerSEXP, SEXP sv_boolSEXP, SEXP sv_matrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -148,18 +148,18 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_suBART_makeSigma", (DL_FUNC) &_suBART_makeSigma, 2},
-    {"_suBART_makeSigmaInv", (DL_FUNC) &_suBART_makeSigmaInv, 1},
-    {"_suBART_wishart_loglikelihood", (DL_FUNC) &_suBART_wishart_loglikelihood, 3},
-    {"_suBART_iwishart_loglikelihood", (DL_FUNC) &_suBART_iwishart_loglikelihood, 3},
-    {"_suBART_log_dmvn", (DL_FUNC) &_suBART_log_dmvn, 2},
-    {"_suBART_cppbart", (DL_FUNC) &_suBART_cppbart, 21},
-    {"_suBART_truncated_sample", (DL_FUNC) &_suBART_truncated_sample, 3},
-    {"_suBART_cppbart_CLASS", (DL_FUNC) &_suBART_cppbart_CLASS, 20},
+    {"_subart_makeSigma", (DL_FUNC) &_subart_makeSigma, 2},
+    {"_subart_makeSigmaInv", (DL_FUNC) &_subart_makeSigmaInv, 1},
+    {"_subart_wishart_loglikelihood", (DL_FUNC) &_subart_wishart_loglikelihood, 3},
+    {"_subart_iwishart_loglikelihood", (DL_FUNC) &_subart_iwishart_loglikelihood, 3},
+    {"_subart_log_dmvn", (DL_FUNC) &_subart_log_dmvn, 2},
+    {"_subart_cppbart", (DL_FUNC) &_subart_cppbart, 21},
+    {"_subart_truncated_sample", (DL_FUNC) &_subart_truncated_sample, 3},
+    {"_subart_cppbart_CLASS", (DL_FUNC) &_subart_cppbart_CLASS, 20},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_suBART(DllInfo *dll) {
+RcppExport void R_init_subart(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

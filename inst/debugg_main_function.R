@@ -36,12 +36,12 @@ if(running_all_arguments){
      specify_variables = NULL # Specify variables for each dimension (j) by name or index for.
      diagnostic = TRUE
 }
-# # Running suBART model
-subart_ig <- suBART::suBART(x_train = X,y_mat = y,
+# # Running subart model
+subart_ig <- subart::subart(x_train = X,y_mat = y,
                           x_test = X,n_tree = 50,
                           hier_prior_bool = FALSE)
 
-subart_t <- suBART::suBART(x_train = X,y_mat = y,
+subart_t <- subart::subart(x_train = X,y_mat = y,
                             x_test = X,n_tree = 50,
                             hier_prior_bool = TRUE)
 

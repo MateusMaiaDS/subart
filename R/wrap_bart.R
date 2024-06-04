@@ -1,9 +1,9 @@
 #' Multivariate Normal Bayesian Additive Regression trees.
-#' @useDynLib suBART
+#' @useDynLib subart
 #' @importFrom Rcpp sourceCpp
 #'
 #' @description
-#' \code{suBART()} function models a Bayesian Additive Regression trees model considering the Multivariate Normal (MVN) distribution
+#' \code{subart()} function models a Bayesian Additive Regression trees model considering the Multivariate Normal (MVN) distribution
 #' from the target dependent variable \eqn{Y_{i} \in \mathbb{R}^{d}}.
 #'
 #' @details
@@ -12,8 +12,8 @@
 #'
 #' @returns
 #' In case of a continuous response the model returns
-#' \code{suBART} object with the model predictions and parameters for the standard MVN. For the binary-classification problems the probit
-#' Probit-MVN approach is used, and returns the \code{suBART} object.
+#' \code{subart} object with the model predictions and parameters for the standard MVN. For the binary-classification problems the probit
+#' Probit-MVN approach is used, and returns the \code{subart} object.
 #'
 #'
 #' @param x_train A \code{data.frame} of the training data covariates.
@@ -25,7 +25,7 @@
 #' @param n_burn The number of MCMC iterations to be tretead as burn in samples
 #' @param alpha The power parameter used in tree prior.
 #' @param beta The base parameter used in tree prior.
-#' @param df Degrees of freedom for the residuals variance prior. Not used when \eqn{Y} is a binary outcome.
+#' @param nu The \eqn{\nu} parameter associated with the degree of freedom from the variance prior.
 #' @param sigquant Quantile used to define the residuals variance. Remind that the prior definition is based on \eqn{P(\sigma^{(j)} < \hat{\sigma}^{(j)})} where \eqn{\hat{\sigma}^{(j)}} is a "rough data-based estimation" for example, the sample variance of the observed \eqn{y^{(j)}} values.
 #' @param kappa Hyper-parameter from the \eqn{\mu_{t\ell}^{(j)}} (Chipman et. al 2010). Such that \eqn{\sigma} = 0.25
 #' @param numcut The maximum number of possible values used in the tree decision rules. The uniform approximation for choose a decision rule over \eqn{X^{(j)}} is given a grid of size \code{numcut}.
@@ -35,7 +35,7 @@
 #' @param specify_variables a list of numeric vectors where each respective element contains the indexes of the covariates allowed to be selected for the set of trees for the respective respose \eqn{Y_{j}}. The default is \code{NULL} and allow to all covariates from \eqn{X} to be selected for all trees.
 #' @param diagnostic a boolean to compute or not the ESS for the posterior samples of the \eqn{\boldsymbol{\Sigma}}
 #' @export
-suBART <- function(x_train,
+subart <- function(x_train,
                   y_mat,
                   x_test,
                   n_tree = 100,
@@ -44,7 +44,6 @@ suBART <- function(x_train,
                   n_burn = 500,
                   alpha = 0.95,
                   beta = 2,
-                  # df = 3, # The degrees of freedom are a function of nu, such as df = nu + d -1
                   nu = 3,
                   sigquant = 0.9,
                   kappa = 2,
@@ -222,7 +221,7 @@ suBART <- function(x_train,
              if(nrow(x_train_scale) > ncol(y_mat_scale)){
                 nsigma <- apply(y_mat_scale, 2, function(Y){naive_sigma(x = x_train_scale,y = Y)})
              } else {
-                nsigma <- apply(y_mat_scale, 2, function(Y){sd(Y)})
+                nsigma <- apply(y_mat_scale, 2, function(Y){stats::sd(Y)})
              }
              # Define the ensity function
              phalft <- function(x, A, nu){
@@ -428,7 +427,7 @@ suBART <- function(x_train,
                               x_test = x_test),
                   ESS = ESS_val)
 
-             class(list_obj_) <- "suBART-probit"
+             class(list_obj_) <- "subart-probit"
      } else {
 
              # Case if storing a variable selection or not
@@ -497,7 +496,7 @@ suBART <- function(x_train,
                               x_test = x_test),
                   ESS = ESS_val)
 
-             class(list_obj_) <- "suBART"
+             class(list_obj_) <- "subart"
      }
 
      # Return the list with all objects and parameters

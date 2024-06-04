@@ -2,34 +2,34 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 makeSigma <- function(sigma, d) {
-    .Call('_suBART_makeSigma', PACKAGE = 'suBART', sigma, d)
+    .Call('_subart_makeSigma', PACKAGE = 'subart', sigma, d)
 }
 
 makeSigmaInv <- function(Sigma) {
-    .Call('_suBART_makeSigmaInv', PACKAGE = 'suBART', Sigma)
+    .Call('_subart_makeSigmaInv', PACKAGE = 'subart', Sigma)
 }
 
 wishart_loglikelihood <- function(X, Sigma, nu) {
-    .Call('_suBART_wishart_loglikelihood', PACKAGE = 'suBART', X, Sigma, nu)
+    .Call('_subart_wishart_loglikelihood', PACKAGE = 'subart', X, Sigma, nu)
 }
 
 iwishart_loglikelihood <- function(X, Sigma, nu) {
-    .Call('_suBART_iwishart_loglikelihood', PACKAGE = 'suBART', X, Sigma, nu)
+    .Call('_subart_iwishart_loglikelihood', PACKAGE = 'subart', X, Sigma, nu)
 }
 
 log_dmvn <- function(x, Sigma) {
-    .Call('_suBART_log_dmvn', PACKAGE = 'suBART', x, Sigma)
+    .Call('_subart_log_dmvn', PACKAGE = 'subart', x, Sigma)
 }
 
 cppbart <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix) {
-    .Call('_suBART_cppbart', PACKAGE = 'suBART', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix)
+    .Call('_subart_cppbart', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix)
 }
 
 truncated_sample <- function(mu, left, sigma_) {
-    .Call('_suBART_truncated_sample', PACKAGE = 'suBART', mu, left, sigma_)
+    .Call('_subart_truncated_sample', PACKAGE = 'subart', mu, left, sigma_)
 }
 
 cppbart_CLASS <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix) {
-    .Call('_suBART_cppbart_CLASS', PACKAGE = 'suBART', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix)
+    .Call('_subart_cppbart_CLASS', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix)
 }
 
