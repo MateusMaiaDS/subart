@@ -237,7 +237,7 @@ subart <- function(x_train,
 
                      for(i in 1:length(nsigma)){
                              # Calculating lambda
-                             A_j[i] <- stats::optim(par = 0.01, f = function(A){(sigquant - phalft(nsigma[i], A, nu)^2)},
+                             A_j[i] <- stats::optim(par = 0.01, f = function(A){(sigquant - phalft(nsigma[i], A, nu))^2},
                                                     method = "Brent",lower = 0.00001,upper = 100)$par
                      }
 
