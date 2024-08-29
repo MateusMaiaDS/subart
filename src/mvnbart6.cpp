@@ -1278,7 +1278,7 @@ void getPredictions(Node* tree,
 
 void update_a_j(modelParam &data){
 
-        double shape_j = 0.5*(data.y_mat.n_rows+data.nu);
+        double shape_j = 0.5*(data.y_mat.n_cols+data.nu);
         arma::mat Precision = arma::inv(data.Sigma);
 
         // Rcpp::Rcout << "a_j_vec is: "<< data.a_j_vec.size() << endl;
