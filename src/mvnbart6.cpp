@@ -1608,6 +1608,8 @@ Rcpp::List cppbart(arma::mat x_train,
 // [[Rcpp::export]]
 Rcpp::List cppbart_missing(arma::mat x_train,
                    arma::mat y_mat,
+                   arma::vec n_missing,
+                   arma::mat na_indicators,
                    arma::mat x_test,
                    arma::mat x_cut,
                    int n_tree,

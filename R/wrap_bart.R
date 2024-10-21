@@ -297,6 +297,27 @@ subart <- function(x_train,
                         y_mat_scale[is.na(y_mat_scale)] <- 0
                         na_indicators <- ifelse(is.na(y_mat_scale),1,0)
 
+                        bart_obj <- cppbart_missing(x_train_scale,
+                                                   y_mat_scale,
+                                                   number_na,
+                                                   na_indicators,
+                                                   x_test_scale,
+                                                   xcut_m,
+                                                   n_tree,
+                                                   node_min_size,
+                                                   n_mcmc,
+                                                   n_burn,
+                                                   Sigma_init,
+                                                   mu_init,
+                                                   sigma_mu_j,
+                                                   alpha,beta,nu,
+                                                   S_0_wish,
+                                                   A_j,
+                                                   update_Sigma,
+                                                   varimportance,
+                                                   sv_bool,
+                                                   hier_prior_bool,
+                                                   sv_matrix)
 
                 } else {
                         bart_obj <- cppbart(x_train_scale,
