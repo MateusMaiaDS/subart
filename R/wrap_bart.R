@@ -170,8 +170,8 @@ subart <- function(x_train,
 
 
      # Scaling the y
-     min_y <- apply(y_mat,2,min)
-     max_y <- apply(y_mat,2,max)
+     min_y <- apply(y_mat,2,min,na.rm = TRUE)
+     max_y <- apply(y_mat,2,max,na.rm = TRUE)
 
      # Scaling the data
      if(scale_y){
@@ -212,7 +212,7 @@ subart <- function(x_train,
              if(is.null(Sigma_init)){
                      Sigma_init <- diag(1,nrow = NCOL(y_mat))
              }
-             mu_init <- apply(y_mat,2,mean)
+             mu_init <- apply(y_mat,2,mean,na.rm = TRUE)
 
              df <- nu + ncol(y_mat_scale) - 1
              # No extra parameters are need to calculate for the class model
@@ -221,7 +221,7 @@ subart <- function(x_train,
              if(nrow(x_train_scale) > ncol(y_mat_scale)){
                 nsigma <- apply(y_mat_scale, 2, function(Y){naive_sigma(x = x_train_scale,y = Y)})
              } else {
-                nsigma <- apply(y_mat_scale, 2, function(Y){stats::sd(Y)})
+                nsigma <- apply(y_mat_scale, 2, function(Y){stats::sd(Y,na.rm = TRUE)})
              }
              # Define the ensity function
              phalft <- function(x, A, nu){
@@ -266,7 +266,7 @@ subart <- function(x_train,
                      Sigma_init <- diag(nsigma^2)
              }
 
-             mu_init <- apply(y_mat_scale,2,mean)
+             mu_init <- apply(y_mat_scale,2,mean,na.rm = TRUE)
      }
 
 

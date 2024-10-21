@@ -9,15 +9,20 @@ set.seed(42)
 n <- 250
 sim_data <- sim_mvn_friedman1(n = n,p = 10,mvn_dim = 2)
 
+random_index <- sample(1:nrow(sim_data$x),
+                       size = 0.25*nrow(sim_data$x))
+y_missing <- sim_data$y
+y_missing[random_index,1] <- NA
+
 # Storing X, Y
 x_train_scale <- X <- sim_data$x
 y_mat_scale <- y <- sim_data$y_true
 
-running_all_arguments <- FALSE
+running_all_arguments <- TRUE
 if(running_all_arguments){
      # Running main arguments
      x_train <- X
-     y_mat <- y
+     y_mat <- y_missing
      x_test <- X
      n_tree = 10
      node_min_size = 5
@@ -38,11 +43,11 @@ if(running_all_arguments){
 }
 # # Running subart model
 subart_ig <- subart::subart(x_train = X,y_mat = y,
-                          x_test = X,n_tree = 50,
-                          hier_prior_bool = FALSE)
+                            x_test = X,n_tree = 50,
+                            hier_prior_bool = FALSE)
 
 subart_t <- subart::subart(x_train = X,y_mat = y,
-                            x_test = X,n_tree = 50,
-                            hier_prior_bool = TRUE)
+                           x_test = X,n_tree = 50,
+                           hier_prior_bool = TRUE)
 
 
