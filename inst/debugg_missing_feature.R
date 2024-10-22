@@ -18,7 +18,7 @@ y_missing[random_index,1] <- NA
 x_train_scale <- X <- sim_data$x
 y_mat_scale <- y <- sim_data$y_true
 
-running_all_arguments <- TRUE
+running_all_arguments <- FALSE
 if(running_all_arguments){
      # Running main arguments
      x_train <- X
@@ -42,12 +42,12 @@ if(running_all_arguments){
      diagnostic = TRUE
 }
 # # Running subart model
-subart_ig <- subart::subart(x_train = X,y_mat = y,
+subart_ig <- subart::subart(x_train = X,y_mat = y_missing,
                             x_test = X,n_tree = 50,
-                            hier_prior_bool = FALSE)
+                            hier_prior_bool = TRUE)
 
-subart_t <- subart::subart(x_train = X,y_mat = y,
-                           x_test = X,n_tree = 50,
-                           hier_prior_bool = TRUE)
+# subart_t <- subart::subart(x_train = X,y_mat = y,
+#                            x_test = X,n_tree = 50,
+#                            hier_prior_bool = TRUE)
 
-
+plot(y_mat_scale[,1],subart_ig$y_hat_mean[,1])

@@ -1605,6 +1605,43 @@ Rcpp::List cppbart(arma::mat x_train,
                                 );
 }
 
+
+void update_y_mat_missing(modelParam & data,
+                          arma::mat & y_mat_hat,
+                          arma::mat & na_indicators,
+                          int ii) {
+
+
+        // Creating the copies dropping the ii column
+        arma::mat y_mat_mj = data.y_mat;
+        arma::mat y_hat_mj = y_mat_hat;
+        arma::mat Sigma_mj_mj = data.Sigma;
+        arma::mat Sigma_j_mj = data.Sigma;
+        arma::mat Sigma_mj_j = data.Sigma;
+
+        y_mat_mj.shed_col(ii);
+        y_hat_mj.shed_col(ii);
+        Sigma_mj_mj.shed_col(ii);
+        Sigma_mj_mj.shed_row(ii);
+        Sigma_j_mj.shed_col(ii);
+        Sigma_mj_j.shed_row(ii);
+
+        //Rcpp::Rcout << "Value for ii:" << ii << endl;
+        arma::mat Sigma_mj_mj_inv = arma::inv(Sigma_mj_mj);
+        arma::mat scale_mean_aux = Sigma_j_mj.row(ii)*Sigma_mj_mj_inv;
+
+        double variance_aux = data.Sigma(ii,ii) - arma::as_scalar(scale_mean_aux*Sigma_mj_j.col(ii));
+        double mean_y_ii;
+
+        for(int kk = 0; kk < na_indicators.n_rows;kk++){
+                if(na_indicators(kk,ii)==1){
+                        mean_y_ii = arma::as_scalar(y_mat_hat(na_indicators(kk,ii),ii) + scale_mean_aux*(y_mat_mj.row(kk)-y_hat_mj.row(kk)));
+                        data.y_mat(kk,ii) = R::rnorm(mean_y_ii,sqrt(variance_aux));
+                }
+        }
+
+        return;
+}
 // [[Rcpp::export]]
 Rcpp::List cppbart_missing(arma::mat x_train,
                    arma::mat y_mat,
@@ -1788,8 +1825,6 @@ Rcpp::List cppbart_missing(arma::mat x_train,
                         data.v_j = v;
 
 
-
-
                         data.sigma_mu_j = data.sigma_mu(j);
 
 
@@ -1874,6 +1909,18 @@ Rcpp::List cppbart_missing(arma::mat x_train,
                 }
 
                 all_Sigma_post.slice(i) = data.Sigma;
+
+                // Updating the missing data;
+                for (int ii = 0; ii < n_missing.size(); ii++){
+                        if(n_missing(ii)==0){
+                                continue;
+                        } else {
+                                update_y_mat_missing(data,
+                                                     y_mat_hat,
+                                                     na_indicators,
+                                                     ii);
+                        }
+                }
 
                 // std::cout << " All good " << endl;
                 if(i >= n_burn){
