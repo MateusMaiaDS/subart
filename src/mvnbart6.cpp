@@ -1635,7 +1635,7 @@ void update_y_mat_missing(modelParam & data,
 
         for(int kk = 0; kk < na_indicators.n_rows;kk++){
                 if(na_indicators(kk,ii)==1){
-                        mean_y_ii = arma::as_scalar(y_mat_hat(na_indicators(kk,ii),ii) + scale_mean_aux*(y_mat_mj.row(kk)-y_hat_mj.row(kk)));
+                        mean_y_ii = arma::as_scalar(y_mat_hat(kk,ii) + scale_mean_aux*(y_mat_mj.row(kk)-y_hat_mj.row(kk)));
                         data.y_mat(kk,ii) = R::rnorm(mean_y_ii,sqrt(variance_aux));
                 }
         }
