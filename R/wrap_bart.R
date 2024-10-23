@@ -347,6 +347,11 @@ subart <- function(x_train,
      # Returning the main components from the model
      y_train_post <- bart_obj[[1]]
      y_test_post <- bart_obj[[2]]
+     y_mat_post <-if(any(is.na(y_mat_scale))){
+          bart_obj[[8]]
+     } else {
+             NULL
+     }
      Sigma_post <- bart_obj[[3]]
      all_Sigma_post <- bart_obj[[4]]
 
@@ -368,6 +373,9 @@ subart <- function(x_train,
                              y_test_for[,jj] <- y_test_for[,jj] +  unnormalize_bart(z = y_test_post[,jj,i],a = min_y[jj],b = max_y[jj])
                              y_train_post[,jj,i] <- unnormalize_bart(z = y_train_post[,jj,i],a = min_y[jj],b = max_y[jj])
                              y_test_post[,jj,i] <-  unnormalize_bart(z = y_test_post[,jj,i],a = min_y[jj],b = max_y[jj])
+                             if(any(is.na(y_mat_scale))){
+                                y_mat_post[,jj,i] <- unnormalize_bart(z = y_mat_post[,jj,i],a = min_y[jj],b = max_y[jj])
+                             }
                      }
              }
      } else {
@@ -430,6 +438,8 @@ subart <- function(x_train,
              if(ESS_warn){
                      warning(paste0("A ESS less than ",round((n_mcmc-n_burn)/2,digits = 0)," was obtanied. Verify the traceplots and adjust the priors to improve the sampling."))
              }
+
+
 
 
              list_obj_ <- list(y_hat = y_train_post,
@@ -523,7 +533,8 @@ subart <- function(x_train,
                               n_burn = n_burn),
                   data = list(x_train = x_train,
                               y_mat = y_mat,
-                              x_test = x_test),
+                              x_test = x_test,
+                              y_mat_post = ifelse(any(is.na(y_mat)),y_mat_post,NULL)),
                   ESS = ESS_val)
 
              class(list_obj_) <- "subart"

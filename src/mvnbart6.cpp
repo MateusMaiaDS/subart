@@ -1697,6 +1697,7 @@ Rcpp::List cppbart_missing(arma::mat x_train,
         // Defining those elements
         arma::cube y_train_hat_post(data.y_mat.n_rows,data.y_mat.n_cols,n_post,arma::fill::zeros);
         arma::cube y_test_hat_post(data.x_test.n_rows,data.y_mat.n_cols,n_post,arma::fill::zeros);
+        arma::cube y_mat_post(data.y_mat.n_rows,data.y_mat.n_cols,n_post, arma::fill::zeros);
         arma::cube Sigma_post(data.Sigma.n_rows,data.Sigma.n_cols,n_post,arma::fill::zeros);
         arma::cube all_Sigma_post(data.Sigma.n_rows,data.Sigma.n_cols,n_mcmc,arma::fill::zeros);
 
@@ -1927,6 +1928,7 @@ Rcpp::List cppbart_missing(arma::mat x_train,
                         // Storing the predictions
                         y_train_hat_post.slice(curr) = y_mat_hat;
                         y_test_hat_post.slice(curr) = y_mat_test_hat;
+                        y_mat_post.slice(curr) = data.y_mat;
                         Sigma_post.slice(curr) = data.Sigma;
                         curr++;
                 }
@@ -1957,7 +1959,8 @@ Rcpp::List cppbart_missing(arma::mat x_train,
                                   all_Sigma_post, // [4]
                                   data.move_proposal, // [5]
                                   data.move_acceptance, //[6]
-                                  all_j_tree_var //[7]
+                                  all_j_tree_var, //[7]
+                                  y_mat_post // [8]
         );
 }
 
