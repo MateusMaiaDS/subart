@@ -295,6 +295,7 @@ subart <- function(x_train,
                 if(any(is.na(y_mat_scale))){
                         number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
                         y_mat_scale[is.na(y_mat_scale)] <- 0
+                        na_boolean <- TRUE
                         na_indicators <- ifelse(is.na(y_mat_scale),1,0)
 
                         bart_obj <- cppbart_missing(x_train_scale,
@@ -320,6 +321,7 @@ subart <- function(x_train,
                                                    sv_matrix)
 
                 } else {
+                        na_boolean <- FALSE
                         bart_obj <- cppbart(x_train_scale,
                                             y_mat_scale,
                                             x_test_scale,
@@ -347,7 +349,7 @@ subart <- function(x_train,
      # Returning the main components from the model
      y_train_post <- bart_obj[[1]]
      y_test_post <- bart_obj[[2]]
-     y_mat_post <-if(any(is.na(y_mat_scale))){
+     y_mat_post <-if(na_boolean){
           bart_obj[[8]]
      } else {
              NULL
@@ -373,7 +375,7 @@ subart <- function(x_train,
                              y_test_for[,jj] <- y_test_for[,jj] +  unnormalize_bart(z = y_test_post[,jj,i],a = min_y[jj],b = max_y[jj])
                              y_train_post[,jj,i] <- unnormalize_bart(z = y_train_post[,jj,i],a = min_y[jj],b = max_y[jj])
                              y_test_post[,jj,i] <-  unnormalize_bart(z = y_test_post[,jj,i],a = min_y[jj],b = max_y[jj])
-                             if(any(is.na(y_mat_scale))){
+                             if(na_boolean){
                                 y_mat_post[,jj,i] <- unnormalize_bart(z = y_mat_post[,jj,i],a = min_y[jj],b = max_y[jj])
                              }
                      }
@@ -534,7 +536,7 @@ subart <- function(x_train,
                   data = list(x_train = x_train,
                               y_mat = y_mat,
                               x_test = x_test,
-                              y_mat_post = ifelse(any(is.na(y_mat)),y_mat_post,NULL)),
+                              y_mat_post = ifelse(na_boolean,y_mat_post,NULL)),
                   ESS = ESS_val)
 
              class(list_obj_) <- "subart"
