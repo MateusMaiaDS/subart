@@ -56,6 +56,22 @@ subart <- function(x_train,
                   diagnostic = TRUE # Calculates the Effective Sample size for the covariance and correlation parameters
                   ) {
 
+     # Handling error heading
+     if(n_mcmc<=n_burn){
+          stop("Number of MCMC iterations must be greater than the number of burn-in samples.")
+     }
+
+     if(nrow(x_train)<numcut){
+          warning("numcut is smaller than the number of rows of x_train, numcut was re-defined as the nrow(x_train)")
+          numcut <- nrow(x_train)
+     }
+
+     if(varimportance && (NCOL(x_train)==1)){
+          warning("No varimportance is set as FALSE as there is only one predictor.")
+          varimportance <- FALSE
+     }
+
+     ## End error handling
 
      # Defining initial paramters that are no longer up to the user to define
      scale_y <- TRUE # If the target variable Y gonna be scaled or not

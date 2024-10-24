@@ -15,7 +15,7 @@ p <- function(x){
      )
 }
 
-n <- 100
+n <- 500
 x <- seq(-0.5, 0.5, length.out = n)
 
 Sigma <- matrix(
