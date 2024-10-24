@@ -294,9 +294,10 @@ subart <- function(x_train,
      } else {
                 if(any(is.na(y_mat_scale))){
                         number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
-                        y_mat_scale[is.na(y_mat_scale)] <- 0
-                        na_boolean <- TRUE
                         na_indicators <- ifelse(is.na(y_mat_scale),1,0)
+                        y_mat_scale[is.na(y_mat_scale)] <- 0
+
+                        na_boolean <- TRUE
 
                         bart_obj <- cppbart_missing(x_train_scale,
                                                    y_mat_scale,
@@ -513,6 +514,19 @@ subart <- function(x_train,
                      warning(paste0("A ESS less than ",round((n_mcmc-n_burn)/2,digits = 0)," was obtanied. Verify the traceplots and adjust the priors to improve the sampling."))
              }
 
+
+             # Returning the data list
+             data_list <- if(na_boolean){
+                  list(x_train = x_train,
+                       y_mat = y_mat,
+                       x_test = x_test,
+                       y_mat_post = y_mat_post)
+             } else {
+                  list(x_train = x_train,
+                       y_mat = y_mat,
+                       x_test = x_test)
+             }
+
              list_obj_ <- list(y_hat = y_train_post,
                   y_hat_test = y_test_post,
                   y_hat_mean = y_mat_mean,
@@ -533,10 +547,7 @@ subart <- function(x_train,
                                tree_acceptance = bart_obj[[6]]),
                   mcmc = list(n_mcmc = n_mcmc,
                               n_burn = n_burn),
-                  data = list(x_train = x_train,
-                              y_mat = y_mat,
-                              x_test = x_test,
-                              y_mat_post = ifelse(na_boolean,y_mat_post,NULL)),
+                  data = data_list,
                   ESS = ESS_val)
 
              class(list_obj_) <- "subart"
