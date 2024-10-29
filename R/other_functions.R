@@ -126,8 +126,8 @@ normalize_bart <- function(y, a = NULL, b = NULL) {
 
      # Defining the a and b
      if( is.null(a) & is.null(b)){
-          a <- min(y)
-          b <- max(y)
+          a <- min(y,na.rm = TRUE)
+          b <- max(y,na.rm = TRUE)
      }
      # This will normalize y between -0.5 and 0.5
      y  <- (y - a)/(b - a) - 0.5
@@ -156,7 +156,9 @@ naive_sigma <- function(x,y){
      colnames(df)<- c(colnames(x),"y")
 
      # Naive lm_mod
-     lm_mod <- stats::lm(formula = y ~ ., data =  df)
+     lm_mod <- stats::lm(formula = y ~ .,
+                         data =  df,
+                         na.action = na.omit)
 
      # Getting sigma
      sigma <- summary(lm_mod)$sigma

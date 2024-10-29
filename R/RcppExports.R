@@ -25,6 +25,10 @@ cppbart <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc
     .Call('_subart_cppbart', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix)
 }
 
+cppbart_missing <- function(x_train, y_mat, n_missing, na_indicators, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix) {
+    .Call('_subart_cppbart_missing', PACKAGE = 'subart', x_train, y_mat, n_missing, na_indicators, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix)
+}
+
 truncated_sample <- function(mu, left, sigma_) {
     .Call('_subart_truncated_sample', PACKAGE = 'subart', mu, left, sigma_)
 }

@@ -56,6 +56,22 @@ subart <- function(x_train,
                   diagnostic = TRUE # Calculates the Effective Sample size for the covariance and correlation parameters
                   ) {
 
+     # Handling error heading
+     if(n_mcmc<=n_burn){
+          stop("Number of MCMC iterations must be greater than the number of burn-in samples.")
+     }
+
+     if(nrow(x_train)<numcut){
+          warning("numcut is smaller than the number of rows of x_train, numcut was re-defined as the nrow(x_train)")
+          numcut <- nrow(x_train)
+     }
+
+     if(varimportance && (NCOL(x_train)==1)){
+          warning("No varimportance is set as FALSE as there is only one predictor.")
+          varimportance <- FALSE
+     }
+
+     ## End error handling
 
      # Defining initial paramters that are no longer up to the user to define
      scale_y <- TRUE # If the target variable Y gonna be scaled or not
@@ -170,8 +186,8 @@ subart <- function(x_train,
 
 
      # Scaling the y
-     min_y <- apply(y_mat,2,min)
-     max_y <- apply(y_mat,2,max)
+     min_y <- apply(y_mat,2,min,na.rm = TRUE)
+     max_y <- apply(y_mat,2,max,na.rm = TRUE)
 
      # Scaling the data
      if(scale_y){
@@ -212,7 +228,7 @@ subart <- function(x_train,
              if(is.null(Sigma_init)){
                      Sigma_init <- diag(1,nrow = NCOL(y_mat))
              }
-             mu_init <- apply(y_mat,2,mean)
+             mu_init <- apply(y_mat,2,mean,na.rm = TRUE)
 
              df <- nu + ncol(y_mat_scale) - 1
              # No extra parameters are need to calculate for the class model
@@ -221,7 +237,7 @@ subart <- function(x_train,
              if(nrow(x_train_scale) > ncol(y_mat_scale)){
                 nsigma <- apply(y_mat_scale, 2, function(Y){naive_sigma(x = x_train_scale,y = Y)})
              } else {
-                nsigma <- apply(y_mat_scale, 2, function(Y){stats::sd(Y)})
+                nsigma <- apply(y_mat_scale, 2, function(Y){stats::sd(Y,na.rm = TRUE)})
              }
              # Define the ensity function
              phalft <- function(x, A, nu){
@@ -266,7 +282,7 @@ subart <- function(x_train,
                      Sigma_init <- diag(nsigma^2)
              }
 
-             mu_init <- apply(y_mat_scale,2,mean)
+             mu_init <- apply(y_mat_scale,2,mean,na.rm = TRUE)
      }
 
 
@@ -292,31 +308,69 @@ subart <- function(x_train,
                                  sv_bool,
                                  sv_matrix)
      } else {
-                bart_obj <- cppbart(x_train_scale,
-                                  y_mat_scale,
-                                  x_test_scale,
-                                  xcut_m,
-                                  n_tree,
-                                  node_min_size,
-                                  n_mcmc,
-                                  n_burn,
-                                  Sigma_init,
-                                  mu_init,
-                                  sigma_mu_j,
-                                  alpha,beta,nu,
-                                  S_0_wish,
-                                  A_j,
-                                  update_Sigma,
-                                  varimportance,
-                                  sv_bool,
-                                  hier_prior_bool,
-                                  sv_matrix)
+                if(any(is.na(y_mat_scale))){
+                        number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
+                        na_indicators <- ifelse(is.na(y_mat_scale),1,0)
+                        y_mat_scale[is.na(y_mat_scale)] <- 0
+
+                        na_boolean <- TRUE
+
+                        bart_obj <- cppbart_missing(x_train_scale,
+                                                   y_mat_scale,
+                                                   number_na,
+                                                   na_indicators,
+                                                   x_test_scale,
+                                                   xcut_m,
+                                                   n_tree,
+                                                   node_min_size,
+                                                   n_mcmc,
+                                                   n_burn,
+                                                   Sigma_init,
+                                                   mu_init,
+                                                   sigma_mu_j,
+                                                   alpha,beta,nu,
+                                                   S_0_wish,
+                                                   A_j,
+                                                   update_Sigma,
+                                                   varimportance,
+                                                   sv_bool,
+                                                   hier_prior_bool,
+                                                   sv_matrix)
+
+                } else {
+                        na_boolean <- FALSE
+                        bart_obj <- cppbart(x_train_scale,
+                                            y_mat_scale,
+                                            x_test_scale,
+                                            xcut_m,
+                                            n_tree,
+                                            node_min_size,
+                                            n_mcmc,
+                                            n_burn,
+                                            Sigma_init,
+                                            mu_init,
+                                            sigma_mu_j,
+                                            alpha,beta,nu,
+                                            S_0_wish,
+                                            A_j,
+                                            update_Sigma,
+                                            varimportance,
+                                            sv_bool,
+                                            hier_prior_bool,
+                                            sv_matrix)
+                }
+
      }
 
 
      # Returning the main components from the model
      y_train_post <- bart_obj[[1]]
      y_test_post <- bart_obj[[2]]
+     y_mat_post <-if(na_boolean){
+          bart_obj[[8]]
+     } else {
+             NULL
+     }
      Sigma_post <- bart_obj[[3]]
      all_Sigma_post <- bart_obj[[4]]
 
@@ -338,6 +392,9 @@ subart <- function(x_train,
                              y_test_for[,jj] <- y_test_for[,jj] +  unnormalize_bart(z = y_test_post[,jj,i],a = min_y[jj],b = max_y[jj])
                              y_train_post[,jj,i] <- unnormalize_bart(z = y_train_post[,jj,i],a = min_y[jj],b = max_y[jj])
                              y_test_post[,jj,i] <-  unnormalize_bart(z = y_test_post[,jj,i],a = min_y[jj],b = max_y[jj])
+                             if(na_boolean){
+                                y_mat_post[,jj,i] <- unnormalize_bart(z = y_mat_post[,jj,i],a = min_y[jj],b = max_y[jj])
+                             }
                      }
              }
      } else {
@@ -400,6 +457,8 @@ subart <- function(x_train,
              if(ESS_warn){
                      warning(paste0("A ESS less than ",round((n_mcmc-n_burn)/2,digits = 0)," was obtanied. Verify the traceplots and adjust the priors to improve the sampling."))
              }
+
+
 
 
              list_obj_ <- list(y_hat = y_train_post,
@@ -471,6 +530,19 @@ subart <- function(x_train,
                      warning(paste0("A ESS less than ",round((n_mcmc-n_burn)/2,digits = 0)," was obtanied. Verify the traceplots and adjust the priors to improve the sampling."))
              }
 
+
+             # Returning the data list
+             data_list <- if(na_boolean){
+                  list(x_train = x_train,
+                       y_mat = y_mat,
+                       x_test = x_test,
+                       y_mat_post = y_mat_post)
+             } else {
+                  list(x_train = x_train,
+                       y_mat = y_mat,
+                       x_test = x_test)
+             }
+
              list_obj_ <- list(y_hat = y_train_post,
                   y_hat_test = y_test_post,
                   y_hat_mean = y_mat_mean,
@@ -491,9 +563,7 @@ subart <- function(x_train,
                                tree_acceptance = bart_obj[[6]]),
                   mcmc = list(n_mcmc = n_mcmc,
                               n_burn = n_burn),
-                  data = list(x_train = x_train,
-                              y_mat = y_mat,
-                              x_test = x_test),
+                  data = data_list,
                   ESS = ESS_val)
 
              class(list_obj_) <- "subart"
