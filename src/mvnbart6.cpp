@@ -5,6 +5,7 @@
 #include <RcppArmadillo.h>
 using namespace std;
 
+
 // =====================================
 // Statistics Function
 // =====================================
