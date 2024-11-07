@@ -16,9 +16,9 @@ y_mat_scale <- y <- sim_data$y_true
 running_all_arguments <- FALSE
 if(running_all_arguments){
      # Running main arguments
-     x_train <- X
-     y_mat <- y
-     x_test <- X
+     x_train <- x
+     y_mat <- y_obs
+     x_test <- x
      n_tree = 10
      node_min_size = 5
      n_mcmc = 2000
