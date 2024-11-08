@@ -296,29 +296,30 @@ subart <- function(x_train,
 
           if(any(is.na(y_mat_scale))){
                y_mat_scale[is.na(y_mat_scale)] <- -1
-
                na_boolean <- TRUE
           } else {
                na_boolean <- FALSE
           }
-               bart_obj <- cppbart_CLASS(x_train_scale,
-                                         y_mat,
-                                         x_test_scale,
-                                         xcut_m,
-                                         n_tree,
-                                         node_min_size,
-                                         n_mcmc,
-                                         n_burn,
-                                         Sigma_init,
-                                         mu_init,
-                                         sigma_mu_j,
-                                         nu,
-                                         alpha,beta,
-                                         m,update_Sigma,
-                                         varimportance,
-                                         tn_sampler,
-                                         sv_bool,
-                                         sv_matrix)
+
+          bart_obj <- cppbart_CLASS(x_train_scale,
+                                    y_mat_scale,
+                                    x_test_scale,
+                                    xcut_m,
+                                    n_tree,
+                                    node_min_size,
+                                    n_mcmc,
+                                    n_burn,
+                                    Sigma_init,
+                                    mu_init,
+                                    sigma_mu_j,
+                                    nu,
+                                    alpha,beta,
+                                    m,update_Sigma,
+                                    varimportance,
+                                    tn_sampler,
+                                    sv_bool,
+                                    sv_matrix)
+
      } else {
                 if(any(is.na(y_mat_scale))){
                         number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
@@ -427,7 +428,7 @@ subart <- function(x_train,
 
      # Transforming to classification context
 
-     # Getting the list of outcloes
+     # Getting the list of outcomes
      if(class_model){
 
              # Case if storing a variable selection or not
