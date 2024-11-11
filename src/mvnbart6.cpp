@@ -5,6 +5,7 @@
 #include <RcppArmadillo.h>
 using namespace std;
 
+
 // =====================================
 // Statistics Function
 // =====================================
@@ -2060,6 +2061,7 @@ double up_tn_sampler(arma::mat &z_mat_, arma::mat &mean_mat_, double lower, doub
 
 
 
+
 double lw_tn_sampler(arma::mat &z_mat_, arma::mat &mean_mat_, double upper, double v_j_,
                      int i_, int j_,
                      arma::mat &Sigma_mj_mj_inv_, arma::mat &Sigma_j_mj_,
@@ -2100,6 +2102,27 @@ double lw_tn_sampler(arma::mat &z_mat_, arma::mat &mean_mat_, double upper, doub
         }
 }
 
+double z_missing_sampler(arma::mat &z_mat_, arma::mat &mean_mat_, double v_j_,
+                         int i_, int j_,
+                         arma::mat &Sigma_mj_mj_inv_, arma::mat &Sigma_j_mj_,
+                         arma::mat &Sigma_mj_j_, bool tn_sampler){
+
+     bool sample_bool = true;
+     int exit = 0;
+     // bool tn_sampler = true;
+
+     // Getting the shed vesion
+     arma::mat z_mj = z_mat_;
+     arma::mat z_mj_hat = mean_mat_;
+     z_mj.shed_col(j_);
+     z_mj_hat.shed_col(j_);
+     double mean_ = mean_mat_(i_,j_) + arma::as_scalar((Sigma_mj_j_.t()*Sigma_mj_mj_inv_)*(z_mj.row(i_)-z_mj_hat.row(i_)).t()); // Old version
+
+     double sample = R::rnorm(mean_,sqrt(v_j_));
+
+     return sample;
+}
+
 
 
 // Updating Z
@@ -2115,16 +2138,22 @@ void update_z(arma::mat &z_mat_,
         // cout << "Nrow z_mat_" << y_hat.n_rows << "-- ncols: " << y_hat.n_cols << endl;
         for(int i = 0; i < data.x_train.n_rows; i++){
 
-                if(data.y_mat(i,j_)==1){
+             if(data.y_mat(i,j_)==1){
                         // cout << "Y_hat(" <<i<<","<<j_<<") :" << y_hat(i,j_) << endl;
                         z_mat_(i,j_) = up_tn_sampler(z_mat_,y_hat,0.0,data.v_j,
                                i,j_,Sigma_mj_mj_inv_,Sigma_j_mj_,Sigma_mj_j_,tn_sampler);
-                } else {
+                } else if(data.y_mat(i,j_)==0){
                         z_mat_(i,j_) = lw_tn_sampler(z_mat_,y_hat,0.0,data.v_j,
                                i,j_,Sigma_mj_mj_inv_,Sigma_j_mj_,Sigma_mj_j_,tn_sampler);
+                } else if (data.y_mat(i,j_)==-1){
+                        z_mat_(i,j_) = z_missing_sampler(z_mat_,y_hat,data.v_j,
+                              i,j_,Sigma_mj_mj_inv_,Sigma_j_mj_,Sigma_mj_j_,tn_sampler);
+                } else {
+                     Rcpp::Rcout << "Invalid outcome for Y" << endl;
                 }
         }
 }
+
 
 // [[Rcpp::export]]
 Rcpp::List cppbart_CLASS(arma::mat x_train,
@@ -2499,8 +2528,3 @@ Rcpp::List cppbart_CLASS(arma::mat x_train,
                                   all_j_tree_var // [[8]]
         );
 }
-
-
-
-
-

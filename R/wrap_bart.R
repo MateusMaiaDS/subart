@@ -61,6 +61,10 @@ subart <- function(x_train,
           stop("Number of MCMC iterations must be greater than the number of burn-in samples.")
      }
 
+     if(is.vector(x_train)|| is.vector(x_test)){
+          stop("x_train and x_test must be either a matrix or data.frame.")
+     }
+
      if(nrow(x_train)<numcut){
           warning("numcut is smaller than the number of rows of x_train, numcut was re-defined as the nrow(x_train)")
           numcut <- nrow(x_train)
@@ -100,7 +104,7 @@ subart <- function(x_train,
      }
 
      # Changing to a classification model
-     if(length(unique(c(y_mat)))==2){
+     if(length(unique(c(y_mat[complete.cases(y_mat)])))==2){
            class_model <- TRUE
            scale_y <- FALSE
      } else {
@@ -289,24 +293,33 @@ subart <- function(x_train,
 
      # Generating the BART obj
      if(class_model){
-                bart_obj <- cppbart_CLASS(x_train_scale,
-                                 y_mat,
-                                 x_test_scale,
-                                 xcut_m,
-                                 n_tree,
-                                 node_min_size,
-                                 n_mcmc,
-                                 n_burn,
-                                 Sigma_init,
-                                 mu_init,
-                                 sigma_mu_j,
-                                 nu,
-                                 alpha,beta,
-                                 m,update_Sigma,
-                                 varimportance,
-                                 tn_sampler,
-                                 sv_bool,
-                                 sv_matrix)
+
+          if(any(is.na(y_mat_scale))){
+               y_mat_scale[is.na(y_mat_scale)] <- -1
+               na_boolean <- TRUE
+          } else {
+               na_boolean <- FALSE
+          }
+
+          bart_obj <- cppbart_CLASS(x_train_scale,
+                                    y_mat_scale,
+                                    x_test_scale,
+                                    xcut_m,
+                                    n_tree,
+                                    node_min_size,
+                                    n_mcmc,
+                                    n_burn,
+                                    Sigma_init,
+                                    mu_init,
+                                    sigma_mu_j,
+                                    nu,
+                                    alpha,beta,
+                                    m,update_Sigma,
+                                    varimportance,
+                                    tn_sampler,
+                                    sv_bool,
+                                    sv_matrix)
+
      } else {
                 if(any(is.na(y_mat_scale))){
                         number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
@@ -415,7 +428,7 @@ subart <- function(x_train,
 
      # Transforming to classification context
 
-     # Getting the list of outcloes
+     # Getting the list of outcomes
      if(class_model){
 
              # Case if storing a variable selection or not
