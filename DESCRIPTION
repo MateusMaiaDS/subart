@@ -13,4 +13,5 @@ LinkingTo:
     Rcpp,
     RcppArmadillo
 Imports: 
+    mvnfast,
     Rcpp

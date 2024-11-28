@@ -340,5 +340,47 @@ mcc <- function(y_true, y_hat){
 }
 
 
+partial_dependance_plot <- function(variable_index,
+                                    use_quantiles = TRUE,
+                                    n_points = NULL,
+                                    x_train,
+                                    y_train,
+                                    ci_prob = 0.95){
 
+     if(isFALSE(use_quantiles)){
+          x_points <- sort(unique(x_train[,variable_index]))
+     } else {
+
+          if(is.null(n_points)){
+              n_points <- 10
+          }
+
+          x_points <- quantile(x = x_train[,variable_index],probs = seq(from = 0, to = 1,length.out = (n_points+2))[-c(1,n_points+2)])
+
+     }
+
+     pd_test_replications <- subart_replications <- vector("list",length = length(x_points))
+     for(i in 1:length(x_points)){
+          pd_test_replications[[i]] <- x_train
+          pd_test_replications[[i]][,variable_index] <- x_points[i]
+     }
+
+     pd_test_matrix <- do.call(rbind,pd_test_replications)
+     pd_index <- split(1:nrow(pd_test_matrix),cut(1:nrow(pd_test_matrix),breaks = length(x_points),labels = FALSE))
+     subart_ppd <- subart::subart(x_train = x_train,
+                                                y_mat = y_train,
+                                                x_test = pd_test_matrix,
+                                                n_tree = 50)
+     y_hat_pd_var <- do.call(rbind,lapply(pd_index,function(x_point_index){colMeans(subart_ppd$y_hat_test_mean[x_point_index,])}))
+
+     par(mfrow = c(1,ncol(y_train)))
+     for(i in 1:ncol(y_train)){
+          plot(x_points,y_hat_pd_var[,i]-mean(y_hat_pd_var[,i]),type ="b",
+               col = i,pch=4,xlim = range(x_points),
+               ylim = c(-2.5,2.5),
+               ylab = "", xlab = paste0("x.",variable_index),main =  bquote(y^{.(i)}))
+     }
+
+
+}
 
