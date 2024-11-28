@@ -344,8 +344,7 @@ partial_dependance_plot <- function(variable_index,
                                     use_quantiles = TRUE,
                                     n_points = NULL,
                                     x_train,
-                                    y_train,
-                                    ci_prob = 0.95){
+                                    y_train,...){
 
      if(isFALSE(use_quantiles)){
           x_points <- sort(unique(x_train[,variable_index]))
@@ -369,15 +368,20 @@ partial_dependance_plot <- function(variable_index,
      pd_index <- split(1:nrow(pd_test_matrix),cut(1:nrow(pd_test_matrix),breaks = length(x_points),labels = FALSE))
      subart_ppd <- subart::subart(x_train = x_train,
                                                 y_mat = y_train,
-                                                x_test = pd_test_matrix,
-                                                n_tree = 50)
+                                                x_test = pd_test_matrix,...)
+
      y_hat_pd_var <- do.call(rbind,lapply(pd_index,function(x_point_index){colMeans(subart_ppd$y_hat_test_mean[x_point_index,])}))
 
-     par(mfrow = c(1,ncol(y_train)))
+     if(ncol(y_train)<=3){
+          par(mfrow = c(1,ncol(y_train)))
+     } else {
+          par(mfrow = c(2,ncol(y_train)))
+     }
+
      for(i in 1:ncol(y_train)){
           plot(x_points,y_hat_pd_var[,i]-mean(y_hat_pd_var[,i]),type ="b",
                col = i,pch=4,xlim = range(x_points),
-               ylim = c(-2.5,2.5),
+               ylim = c(-3,3),
                ylab = "", xlab = paste0("x.",variable_index),main =  bquote(y^{.(i)}))
      }
 
