@@ -332,7 +332,7 @@ subart <- function(x_train,
      if(scale_y){
 
              # Re-scaling Sigma_all, important to cover convergence issues.
-             for(k in 1:(dim(Sigma_post)[3])){
+             for(k in 1:(dim(all_Sigma_post)[3])){
                   all_Sigma_post[,,k] <- crossprod(Sigma_scale,tcrossprod(all_Sigma_post[,,k],Sigma_scale))
 
              }
