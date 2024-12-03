@@ -101,7 +101,8 @@ pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications =
         return(pi_cov)
 }
 
-# A function to calculate coverage of the credible interval
+#' A function to calculate coverage of the credible interval
+#' @export
 cr_coverage <- function(f_true, f_post, prob = 0.5){
 
 
