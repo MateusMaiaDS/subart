@@ -174,8 +174,10 @@ naive_sigma <- function(x,y){
 
 
 
-# Function to create a vector of variables that being categorical will
-#have the same code
+
+#' Recoding variables
+#' @export
+#'
 recode_vars <- function(x_train, dummy_obj){
 
         vars <- numeric()
@@ -240,7 +242,8 @@ ci_coverage <- function(y_,
         return(ci_cov)
 }
 
-# Binary classification metrics
+#' Binary classification metrics
+#' @export
 logloss <- function(y_true, y_hat){
 
 
@@ -272,6 +275,10 @@ logloss <- function(y_true, y_hat){
 
 }
 
+#' Brier Score
+#
+#' @export
+#'
 brierscore <- function(y_true, y_hat){
 
 
@@ -298,7 +305,10 @@ brierscore <- function(y_true, y_hat){
 
 }
 
-# Getting the accuracy
+#' Getting the accuracy
+#'
+#' @export
+#'
 acc <- function(y_true, y_hat){
 
 
@@ -324,7 +334,10 @@ acc <- function(y_true, y_hat){
 
 }
 
-# Getting the accuracy
+#' Getting the mcc
+#'
+#' @export
+#'
 mcc <- function(y_true, y_hat){
 
 
