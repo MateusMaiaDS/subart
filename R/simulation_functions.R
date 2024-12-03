@@ -8,7 +8,6 @@
 #' @return a simulated data
 #' @export
 #'
-#' @examples
 sim_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 
 
@@ -87,7 +86,6 @@ sim_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 #' @return a simulated data
 #' @export
 #'
-#' @examples
 sim_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
 
 
@@ -184,7 +182,6 @@ sim_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
 #' @return a simulated data
 #' @export
 #'
-#' @examples
 sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 
 
@@ -263,7 +260,6 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
 #' @return a simulated data
 #' @export
 #'
-#' @examples
 sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
 
 

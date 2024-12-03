@@ -53,7 +53,10 @@ normalize_covariates_bart <- function(y, a = NULL, b = NULL) {
 }
 
 
-# Coverage for the prediction intervals
+#' Coverage for the prediction intervals
+#'
+#' @export
+#'
 pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications = 1000){
 
         # Getting the number of posterior samples and columns, respect.
@@ -205,7 +208,9 @@ rmse <- function(x,y){
      return(sqrt(mean((y-x)^2)))
 }
 
-# Calculating CRPS from (https://arxiv.org/pdf/1709.04743.pdf)
+#' Calculating CRPS from (https://arxiv.org/pdf/1709.04743.pdf)
+#' @export
+#'
 crps <- function(y,means,sds){
 
      # scaling the observed y
@@ -217,7 +222,9 @@ crps <- function(y,means,sds){
 }
 
 
-# Calculating a Frequentist confidence interval covarage
+#' Calculating a Frequentist confidence interval covarage
+#' @export
+#'
 ci_coverage <- function(y_,
                         y_hat_,
                         sd_,
