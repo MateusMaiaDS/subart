@@ -2488,6 +2488,9 @@ Rcpp::List cppbart_CLASS(arma::mat x_train,
                                 }
                         }
                 }
+
+                all_Sigma_post.slice(i) = data.R;
+
                 // std::cout << " All good " << endl;
                 if(i >= n_burn){
                         // Storing the predictions
