@@ -397,6 +397,13 @@ subart <- function(x_train,
 
      # Reg_model_bool
      if(scale_y){
+
+             # Re-scaling Sigma_all, important to cover convergence issues.
+             for(k in 1:(dim(all_Sigma_post)[3])){
+                  all_Sigma_post[,,k] <- crossprod(Sigma_scale,tcrossprod(all_Sigma_post[,,k],Sigma_scale))
+
+             }
+
              for(i in 1:(dim(Sigma_post)[3])){
                      Sigma_post[,,i] <- crossprod(Sigma_scale,tcrossprod(Sigma_post[,,i],Sigma_scale))
                      Sigma_for <- Sigma_for +  Sigma_post[,,i]

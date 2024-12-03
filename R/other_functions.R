@@ -197,7 +197,10 @@ recode_vars <- function(x_train, dummy_obj){
         return(vars)
 }
 
-# Calculating the rmse
+#' RMSE: Calculating the rmse
+#'
+#' @export
+#'
 rmse <- function(x,y){
      return(sqrt(mean((y-x)^2)))
 }
