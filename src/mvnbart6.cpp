@@ -448,7 +448,7 @@ void collect_split_vars(arma::vec& var_count, Node* tree){
         if(!tree->isLeaf){
                 var_count[tree->var_split] = var_count[tree->var_split] + 1;
                 collect_split_vars(var_count, tree->left);
-                collect_split_vars(var_count,tree->left);
+                collect_split_vars(var_count,tree->right);
         }
 
 }
