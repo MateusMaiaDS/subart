@@ -441,6 +441,7 @@ subart <- function(x_train,
              # Case if storing a variable selection or not
              if(varimportance){
                      var_importance <- array(NA,dim = c(n_mcmc,ncol(x_test_scale),ncol(y_mat)))
+                     var_importance_raw <- bart_obj[[8]][ii]
                      for(ii in 1:n_mcmc){
                              for(jj in 1:ncol(y_mat)){
                                      var_importance[ii,,jj] <- apply(bart_obj[[8]][ii][[1]][,,jj],2,sum)
@@ -449,7 +450,7 @@ subart <- function(x_train,
 
                      class(var_importance) <- "varimportance"
              } else {
-                     var_importance <- NULL
+                    var_importance <- var_importance <- NULL
              }
 
              # Calculate the ESS for all parameters throw a warning if any of them is smaller than half of the MCMC samples
@@ -492,6 +493,7 @@ subart <- function(x_train,
                   sigmas_post = bart_obj[[7]],
                   all_Sigma_post = all_Sigma_post,
                   var_importance = var_importance,
+                  var_importance_raw = var_importance_raw,
                   prior = list(n_tree = n_tree,
                                alpha = alpha,
                                beta = beta,
@@ -512,6 +514,7 @@ subart <- function(x_train,
              # Case if storing a variable selection or not
              if(varimportance){
                      var_importance <- array(NA,dim = c(n_mcmc,ncol(x_test_scale),ncol(y_mat)))
+                     var_importance_raw <- bart_obj[[7]]
                      for(ii in 1:n_mcmc){
                              for(jj in 1:ncol(y_mat)){
                                 var_importance[ii,,jj] <- apply(bart_obj[[7]][ii][[1]][,,jj],2,sum)
@@ -521,7 +524,7 @@ subart <- function(x_train,
                      class(var_importance) <- "varimportance"
 
              } else {
-                     var_importance <- NULL
+                     var_importance_raw <- var_importance <- NULL
              }
 
              # Calculate the ESS for all parameters throw a warning if any of them is smaller than half of the MCMC samples
@@ -572,6 +575,7 @@ subart <- function(x_train,
                   sigmas_mean = sigmas_mean,
                   all_Sigma_post = all_Sigma_post,
                   var_importance = var_importance,
+                  var_importance_raw = var_importance_raw,
                   prior = list(n_tree = n_tree,
                                alpha = alpha,
                                beta = beta,
