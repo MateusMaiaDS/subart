@@ -760,8 +760,6 @@ cv_matrix_bayesSUR <- function(cv_element_,
      # True Sigma element
      Sigma_ <- cv_element_$train$Sigma
 
-     # Creating a list with multiple models for
-     bart_models <- vector("list",mvn_dim_)
 
      # Generating the crossvalidaiton
      comparison_metrics <- data.frame(metric = NULL,
@@ -779,8 +777,6 @@ cv_matrix_bayesSUR <- function(cv_element_,
                                        fold = NULL)
 
      n_ <- nrow(x_train)
-     crps_pred_post_sample_train_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
-     crps_pred_post_sample_test_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
 
 
      # The frequentist SUR should be used only for the regression approach.
@@ -797,7 +793,6 @@ cv_matrix_bayesSUR <- function(cv_element_,
                eqSystem <- list( y.1 = eq1, y.2 = eq2)
                names(eqSystem) <- NULL
           } else {
-
 
                # Recreate a data.frame in the shape of the single dataset.
                colnames(y_train) <- colnames(y_test) <- paste0("y.",1:mvn_dim_)
@@ -864,14 +859,14 @@ cv_matrix_bayesSUR <- function(cv_element_,
           for(i_ in 1:mvn_dim_){
 
                comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
-                                                                          value =  rmse(x = colMeans(surmod_train_predict[,i_,]),
+                                                                          value =  rmse(x = apply(surmod_train_predict[,i_,],1,mean),
                                                                                         y = y_true_train[,i_]),
                                                                           model = "bayesSUR",
                                                                           fold = i,
                                                                           mvn_dim = i_))
 
                comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
-                                                                          value =  rmse(x = colMeans(surmod_test_predict[,i_,]),
+                                                                          value =  rmse(x = apply(surmod_test_predict[,i_,],1,mean),
                                                                                         y = y_true_test[,i_]),
                                                                           model = "bayesSUR",
                                                                           fold = i,

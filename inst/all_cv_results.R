@@ -78,17 +78,14 @@ i <- 1
                                   n_burn_ = n_burn_)
 
      aux_bayesSUR <- cv_matrix_bayesSUR(cv_element_ = cv_[[i]],
-                                    n_tree_ = n_tree_,
-                                    mvn_dim_ = mvn_dim_,
-                                    n_ = n_,
-                                    p_ = p_,
-                                    i =  i,
-                                    task_ = task_,
-                                    n_mcmc_ = n_mcmc_,
-                                    n_burn_ = n_burn_)
-
-# }
-
+                                         n_tree_ = n_tree_,
+                                         mvn_dim_ = mvn_dim_,
+                                         n_ = n_,
+                                         p_ = p_,
+                                         i =  i,
+                                         task_ = task_,
+                                         n_mcmc_ = n_mcmc_,
+                                         n_burn_ = n_burn_)
 
 # stopCluster(cl)
 
