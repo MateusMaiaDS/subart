@@ -214,6 +214,11 @@ recode_vars <- function(x_train, dummy_obj){
 #' @export
 #'
 rmse <- function(x,y){
+
+     if(length(x)!=length(y)){
+          stop("Insert x and y of the same length to calculate the RMSE.")
+     }
+
      return(sqrt(mean((y-x)^2)))
 }
 
