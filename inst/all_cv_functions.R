@@ -1,0 +1,1050 @@
+## This file stores all CV functions for each one of the models: BART, subart, mvBART
+cv_matrix_bart <- function(cv_element_,
+                           n_tree_,
+                           mvn_dim_,
+                           n_,
+                           p_,
+                           i,
+                           task_,
+                           n_mcmc_,
+                           n_burn_){
+
+     # LOADING LIBRARIES
+     library(dbarts)
+
+     # Getting the data elements
+     x_train <- cv_element_$train$x
+     y_train <- cv_element_$train$y
+     x_test <- cv_element_$test$x
+     y_test <- cv_element_$test$y
+     y_true_train <- cv_element_$train$y_true
+     y_true_test <- cv_element_$test$y_true
+
+     if(task_ == "classification"){
+          z_true_train <- cv_element_$train$z_true
+          z_true_test <- cv_element_$test$z_true
+          z_train <- cv_element_$train$z
+          z_test <- cv_element_$test$z
+          p_true_train <- pnorm(cv_element_$train$z_true)
+          p_true_test <- pnorm(cv_element_$test$z_true)
+     }
+
+     # True Sigma element
+     Sigma_ <- cv_element_$train$Sigma
+
+     # Creating a list with multiple models for
+     bart_models <- vector("list",mvn_dim_)
+
+     # Generating the crossvalidaiton
+     comparison_metrics <- data.frame(metric = NULL,
+                                      value = NULL,
+                                      model = NULL,
+                                      mvn_dim = NULL,
+                                      fold = NULL)
+
+     # Creating the data.frame for the correlation parameters
+     correlation_metrics <- data.frame(metric = NULL,
+                                       value = NULL,
+                                       model = NULL,
+                                       mvn_dim = NULL,
+                                       param_index = NULL,
+                                       fold = NULL)
+
+     n_ <- nrow(x_train)
+     crps_pred_post_sample_train_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+     crps_pred_post_sample_test_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+
+
+     # Generating the BART model
+     for(i_ in 1:mvn_dim_){
+
+          bart_models[[i_]] <- bart(x.train = x_train,y.train = y_train[,i_],
+                                    x.test = x_test,ntree = n_tree_,
+                                    ndpost = (n_mcmc_-n_burn_),nskip = n_burn_)
+
+          # Storing different metrics depending on the task
+          if(task_=="regression"){
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
+                                                                          value =  rmse(x = bart_models[[i_]]$yhat.train.mean,
+                                                                                        y = y_true_train[,i_]),
+                                                                          model = "BART",
+                                                                          fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
+                                                                          value =  rmse(x = bart_models[[i_]]$yhat.test.mean,
+                                                                                        y = y_true_test[,i_]),
+                                                                          model = "BART",
+                                                                          fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
+                                                                          value =  rmse(x = bart_models[[i_]]$yhat.test.mean,
+                                                                                        y = y_true_test[,i_]),
+                                                                          model = "BART",
+                                                                          fold = i,
+                                                                          mvn_dim = i_))
+
+
+               for(ii in 1:n_){
+                    # for(i_j in 1:mvn_dim_){
+                    crps_pred_post_sample_train_bart[ii, i_] <- scoringRules::crps_sample(y_true_train[ii,i_],dat = bart_models[[i_]]$yhat.train[,ii])
+                    crps_pred_post_sample_test_bart[ii,i_] <- scoringRules::crps_sample(y_true_test[ii,i_],dat = bart_models[[i_]]$yhat.test[,ii])
+                    # }
+               }
+
+               # scoringRules::crps_sample(y = y_true_train,bart_models[[i_]]$yhat.train)
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_train",
+                                                                          value = mean(crps_pred_post_sample_train_bart[,i_]),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_test",
+                                                                          value = mean(crps_pred_post_sample_test_bart[,i_]),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
+                                                                          value = pi_coverage(y = y_test[,i_],
+                                                                                              y_hat_post = t(bart_models[[i_]]$yhat.test),
+                                                                                              sd_post = bart_models[[i_]]$sigma,
+                                                                                              prob = 0.5),
+                                                                          model  = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
+                                                                          value = pi_coverage(y = y_train[,i_],
+                                                                                              y_hat_post = t(bart_models[[i_]]$yhat.train),
+                                                                                              sd_post = bart_models[[i_]]$sigma,
+                                                                                              prob = 0.5),
+                                                                          model  = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_test",
+                                                                          value = ci_coverage(y_ = y_true_test[,i_],
+                                                                                              y_hat_ = bart_models[[i_]]$yhat.test.mean,
+                                                                                              sd_ = mean(bart_models[[i_]]$sigma),
+                                                                                              prob_ = 0.5),
+                                                                          model  = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_train",
+                                                                          value = ci_coverage(y_ = y_true_train[,i_],
+                                                                                              y_hat_ = bart_models[[i_]]$yhat.train.mean,
+                                                                                              sd_ = mean(bart_models[[i_]]$sigma),
+                                                                                              prob_ = 0.5),
+                                                                          model  = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
+                                                                          value = cr_coverage(f_true = y_true_train[,i_],
+                                                                                              f_post = t(bart_models[[i_]]$yhat.train),
+                                                                                              prob = 0.5),
+                                                                          model  = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
+                                                                          value = cr_coverage(f_true = y_true_test[,i_],
+                                                                                              f_post = t(bart_models[[i_]]$yhat.test),
+                                                                                              prob = 0.5),
+                                                                          model  = "BART", fold = i,
+                                                                          mvn_dim = i_))
+          } else if( task_ == "classification") {
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_train",
+                                                                          value = logloss(y_true = y_true_train[,i_],
+                                                                                          y_hat = colMeans(pnorm(bart_models[[i_]]$yhat.train))),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_test",
+                                                                          value = logloss(y_true = y_true_test[,i_],
+                                                                                          y_hat = colMeans(pnorm(bart_models[[i_]]$yhat.test))),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_train",
+                                                                          value = brierscore(y_true = y_true_train[,i_],
+                                                                                             y_hat = colMeans(pnorm(bart_models[[i_]]$yhat.train))),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_test",
+                                                                          value = brierscore(y_true = y_true_test[,i_],
+                                                                                             y_hat = colMeans(pnorm(bart_models[[i_]]$yhat.test))),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_train",
+                                                                          value = acc(y_true = y_true_train[,i_],
+                                                                                      y_hat = ifelse(colMeans(pnorm(bart_models[[i_]]$yhat.train))>0.5,1,0)),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_test",
+                                                                          value = acc(y_true = y_true_test[,i_],
+                                                                                      y_hat = ifelse(colMeans(pnorm(bart_models[[i_]]$yhat.test))>0.5,1,0)),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_train",
+                                                                          value = mcc(y_true = y_true_train[,i_],
+                                                                                      y_hat = ifelse(colMeans(pnorm(bart_models[[i_]]$yhat.train))>0.5,1,0)),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_test",
+                                                                          value = mcc(y_true = y_true_test[,i_],
+                                                                                      y_hat = ifelse(colMeans(pnorm(bart_models[[i_]]$yhat.test))>0.5,1,0)),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_train",
+                                                                          value = cr_coverage(f_true = z_true_train[,i_],
+                                                                                              f_post = t(bart_models[[i_]]$yhat.train),
+                                                                                              prob = 0.5),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_test",
+                                                                          value = cr_coverage(f_true = z_true_test[,i_],
+                                                                                              f_post = t(bart_models[[i_]]$yhat.test),
+                                                                                              prob = 0.5),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_train",
+                                                                          value = cr_coverage(f_true = p_true_train[,i_],
+                                                                                              f_post = t(pnorm(bart_models[[i_]]$yhat.train)),
+                                                                                              prob = 0.5),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_test",
+                                                                          value = cr_coverage(f_true = p_true_test[,i_],
+                                                                                              f_post = t(pnorm(bart_models[[i_]]$yhat.test)),
+                                                                                              prob = 0.5),
+                                                                          model = "BART", fold = i,
+                                                                          mvn_dim = i_))
+
+          } else {
+               stop("Insert a valid task.")
+          }
+
+
+          # Doing for the main sigma parameters
+          sigma_ <- sqrt(Sigma_[i_,i_])
+          sigma_post <- bart_models[[i_]]$sigma
+          correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
+                                                                       value = cr_coverage(f_true = sigma_,
+                                                                                           f_post = matrix(sigma_post,ncol = length(sigma_post)),
+                                                                                           prob = 0.5),
+                                                                       model = "BART",
+                                                                       mvn_dim = mvn_dim_,
+                                                                       param_index = paste0("sigma",i_,i_,collapse = ""),
+                                                                       fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
+                                                                       value = rmse(x = mean(sigma_post),y = sigma_),
+                                                                       model = 'BART',
+                                                                       mvn_dim = mvn_dim_,
+                                                                       param_index = paste0("sigma",i_,i_,collapse = ""),
+                                                                       fold = i))
+
+
+     }
+
+     return(list(comparison_metrics = comparison_metrics,
+                 correlation_metrics = correlation_metrics,
+                 bart_models = bart_models))
+
+}
+
+## This file stores all CV functions for each one of the models: BART, subart, mvBART
+cv_matrix_subart <- function(cv_element_,
+                           n_tree_,
+                           mvn_dim_,
+                           n_,
+                           p_,
+                           i,
+                           task_,
+                           n_mcmc_,
+                           n_burn_){
+
+     # LOADING LIBRARIES
+     library(subart)
+
+     # Getting the data elements
+     x_train <- cv_element_$train$x
+     y_train <- cv_element_$train$y
+     x_test <- cv_element_$test$x
+     y_test <- cv_element_$test$y
+     y_true_train <- cv_element_$train$y_true
+     y_true_test <- cv_element_$test$y_true
+
+     if(task_ == "classification"){
+          z_true_train <- cv_element_$train$z_true
+          z_true_test <- cv_element_$test$z_true
+          z_train <- cv_element_$train$z
+          z_test <- cv_element_$test$z
+          p_true_train <- pnorm(cv_element_$train$z_true)
+          p_true_test <- pnorm(cv_element_$test$z_true)
+     }
+
+     # True Sigma element
+     Sigma_ <- cv_element_$train$Sigma
+
+     # Creating a list with multiple models for
+     bart_models <- vector("list",mvn_dim_)
+
+     # Generating the crossvalidaiton
+     comparison_metrics <- data.frame(metric = NULL,
+                                      value = NULL,
+                                      model = NULL,
+                                      mvn_dim = NULL,
+                                      fold = NULL)
+
+     # Creating the data.frame for the correlation parameters
+     correlation_metrics <- data.frame(metric = NULL,
+                                       value = NULL,
+                                       model = NULL,
+                                       mvn_dim = NULL,
+                                       param_index = NULL,
+                                       fold = NULL)
+
+     n_ <- nrow(x_train)
+     crps_pred_post_sample_train_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+     crps_pred_post_sample_test_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+
+
+     # Doing the same for the MVN-BART
+     if(task_ == "regression"){
+          subart_mod <- subart::subart(x_train = x_train,y_mat = y_train,x_test = x_test,
+                                       n_tree = n_tree_,n_mcmc = n_mcmc_,n_burn = n_burn_,nu = 2) # Maybe need to change the df to 10
+     } else if(task_ == "classification"){
+          subart_mod <- subart::subart(x_train = x_train,y_mat = y_train,x_test = x_test,m = nrow(x_train)*ncol(y_train),
+                                       n_tree = n_tree_,n_mcmc = n_mcmc_,n_burn = n_burn_,nu = 2)
+     }
+
+
+
+
+     if(task_ == "regression"){
+          # New calculation of CRPS
+          crps_pred_post_sample_train_subart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+          crps_pred_post_sample_test_subart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+
+          for(ii in 1:n_){
+
+               for(i_ in 1:mvn_dim_){
+                    crps_pred_post_sample_train_subart[ii, i_] <- scoringRules::crps_sample(y_true_train[ii,i_],dat = subart_mod$y_hat[ii,i_,])
+                    crps_pred_post_sample_test_subart[ii,i_] <- scoringRules::crps_sample(y_true_test[ii,i_],dat = subart_mod$y_hat_test[ii,i_,])
+               }
+          }
+     }
+
+     # Generating metrics accordingly to the task
+     if(task_ == "regression"){
+
+
+          # Generating the mvnBART model
+          for(i_ in 1:mvn_dim_){
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
+                                                                          value =  rmse(x = subart_mod$y_hat_mean[,i_],
+                                                                                        y = y_true_train[,i_]),
+                                                                          model = "suBART",
+                                                                          fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
+                                                                          value =  rmse(x = subart_mod$y_hat_test_mean[,i_],
+                                                                                        y = y_true_test[,i_]),
+                                                                          model = "suBART",
+                                                                          fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_train",
+                                                                          value = mean(crps_pred_post_sample_train_subart[,i_]),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_test",
+                                                                          value = mean(crps_pred_post_sample_test_subart[,i_]),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
+                                                                          value = pi_coverage(y = y_test[,i_],
+                                                                                              y_hat_post = (subart_mod$y_hat_test[,i_,]),
+                                                                                              sd_post = sqrt(subart_mod$Sigma_post[i_,i_,]),
+                                                                                              prob = 0.5),
+                                                                          model  = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
+                                                                          value = pi_coverage(y = y_train[,i_],
+                                                                                              y_hat_post =  (subart_mod$y_hat[,i_,]),
+                                                                                              sd_post = sqrt(subart_mod$Sigma_post[i_,i_,]),
+                                                                                              prob = 0.5,n_mcmc_replications = 100),
+                                                                          model  = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_test",
+                                                                          value = ci_coverage(y_ = y_true_test[,i_],
+                                                                                              y_hat_ = subart_mod$y_hat_test_mean[,i_],
+                                                                                              sd_ = mean(sqrt(subart_mod$Sigma_post[i_,i_,])),
+                                                                                              prob_ = 0.5),
+                                                                          model  = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_train",
+                                                                          value = ci_coverage(y_ = y_true_train[,i_],
+                                                                                              y_hat_ =  subart_mod$y_hat_mean[,i_],
+                                                                                              sd_ = mean(sqrt(subart_mod$Sigma_post[i_,i_,])),
+                                                                                              prob_ = 0.5),
+                                                                          model  = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
+                                                                          value = cr_coverage(f_true = y_true_test[,i_],
+                                                                                              f_post = (subart_mod$y_hat_test[,i_,]),
+                                                                                              prob = 0.5),
+                                                                          model  = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
+                                                                          value = cr_coverage(f_true = y_true_train[,i_],
+                                                                                              f_post =  (subart_mod$y_hat[,i_,]),
+                                                                                              prob = 0.5),
+                                                                          model  = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+          }
+
+
+          if(mvn_dim_== 2) {
+
+               # Doing for the correlation parameters
+               rho_ <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
+               rho_post <- subart_mod$Sigma_post[1,2,]/(sqrt(subart_mod$Sigma_post[1,1,])*sqrt(subart_mod$Sigma_post[2,2,]))
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_,
+                                                                                               f_post = matrix(rho_post,ncol = length(rho_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_post),y = rho_),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+               # Doing for the main sigma parameters
+               for(jj_ in 1:mvn_dim_){
+                    sigma_ <- sqrt(Sigma_[jj_,jj_])
+                    sigma_post <- sqrt(subart_mod$Sigma_post[jj_,jj_,])
+                    correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
+                                                                                 value = cr_coverage(f_true = sigma_,
+                                                                                                     f_post = matrix(sigma_post,ncol = length(sigma_post)),
+                                                                                                     prob = 0.5),
+                                                                                 model = "suBART",
+                                                                                 mvn_dim = mvn_dim_,
+                                                                                 param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                                 fold = i))
+
+                    correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
+                                                                                 value = rmse(x = mean(sigma_post),y = sigma_),
+                                                                                 model = "suBART",
+                                                                                 mvn_dim = mvn_dim_,
+                                                                                 param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                                 fold = i))
+               }
+
+          } else if(mvn_dim_== 3 ) {
+
+               # Comparing the true values for the \rho12, \rho13, and \rho23
+               rho_12 <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
+               rho_13 <- Sigma_[1,3]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[3,3]))
+               rho_23 <- Sigma_[2,3]/(sqrt(Sigma_[2,2])*sqrt(Sigma_[3,3]))
+               rho_12_post <- subart_mod$Sigma_post[1,2,]/(sqrt(subart_mod$Sigma_post[1,1,])*sqrt(subart_mod$Sigma_post[2,2,]))
+               rho_13_post <- subart_mod$Sigma_post[1,3,]/(sqrt(subart_mod$Sigma_post[1,1,])*sqrt(subart_mod$Sigma_post[3,3,]))
+               rho_23_post <- subart_mod$Sigma_post[2,3,]/(sqrt(subart_mod$Sigma_post[2,2,])*sqrt(subart_mod$Sigma_post[3,3,]))
+
+
+               # Storing the correlations
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_12,
+                                                                                               f_post = matrix(rho_12_post,ncol = length(rho_12_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_12_post),y = rho_12),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_13,
+                                                                                               f_post = matrix(rho_13_post,ncol = length(rho_13_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho13",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_13_post),y = rho_13),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho13",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_23,
+                                                                                               f_post = matrix(rho_23_post,ncol = length(rho_23_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho23",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_23_post),y = rho_23),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho23",
+                                                                           fold = i))
+
+               # Getting the metrics for the true sigmas
+               for(jj_ in 1:mvn_dim_){
+
+                    sigma_ <- sqrt(Sigma_[jj_,jj_])
+                    sigma_post <- sqrt(subart_mod$Sigma_post[jj_,jj_,])
+                    correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
+                                                                                 value = cr_coverage(f_true = sigma_,
+                                                                                                     f_post = matrix(sigma_post,ncol = length(sigma_post)),
+                                                                                                     prob = 0.5),
+                                                                                 model = "suBART",
+                                                                                 mvn_dim = mvn_dim_,
+                                                                                 param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                                 fold = i))
+
+                    correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
+                                                                                 value = rmse(x = mean(sigma_post),y = sigma_),
+                                                                                 model = "suBART",
+                                                                                 mvn_dim = mvn_dim_,
+                                                                                 param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                                 fold = i))
+               }
+
+
+
+          }
+
+     } else if (task_ == "classification"){ # Considering metrics regarding the classification context
+
+          for( i_ in 1:mvn_dim_){ # Generating the metrics regarding each dimension
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_train",
+                                                                          value = logloss(y_true = y_true_train[,i_],
+                                                                                          y_hat = rowMeans(pnorm(subart_mod$y_hat[,i_,]))),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "logloss_test",
+                                                                          value = logloss(y_true = y_true_test[,i_],
+                                                                                          y_hat = rowMeans(pnorm(subart_mod$y_hat_test[,i_,]))),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_train",
+                                                                          value = brierscore(y_true = y_true_train[,i_],
+                                                                                             y_hat = rowMeans(pnorm(subart_mod$y_hat[,i_,]))),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "brier_test",
+                                                                          value = brierscore(y_true = y_true_test[,i_],
+                                                                                             y_hat = rowMeans(pnorm(subart_mod$y_hat_test[,i_,]))),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_train",
+                                                                          value = acc(y_true = y_true_train[,i_],
+                                                                                      y_hat = ifelse(rowMeans(pnorm(subart_mod$y_hat[,i_,]))>0.5,1,0)),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "acc_test",
+                                                                          value = acc(y_true = y_true_test[,i_],
+                                                                                      y_hat = ifelse(rowMeans(pnorm(subart_mod$y_hat_test[,i_,]))>0.5,1,0)),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_train",
+                                                                          value = mcc(y_true = y_true_train[,i_],
+                                                                                      y_hat = ifelse(rowMeans(pnorm(subart_mod$y_hat[,i_,]))>0.5,1,0)),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "mcc_test",
+                                                                          value = mcc(y_true = y_true_test[,i_],
+                                                                                      y_hat = ifelse(rowMeans(pnorm(subart_mod$y_hat_test[,i_,]))>0.5,1,0)),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_train",
+                                                                          value = cr_coverage(f_true = z_true_train[,i_],
+                                                                                              f_post = (subart_mod$y_hat[,i_,]),
+                                                                                              prob = 0.5),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "z_cr_test",
+                                                                          value = cr_coverage(f_true = z_true_test[,i_],
+                                                                                              f_post = (subart_mod$y_hat_test[,i_,]),
+                                                                                              prob = 0.5),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_train",
+                                                                          value = cr_coverage(f_true = p_true_train[,i_],
+                                                                                              f_post = pnorm((subart_mod$y_hat[,i_,])),
+                                                                                              prob = 0.5),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+               # Calculating uncertainty metrics regarding Z (i.e: credible intervals)
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "p_cr_test",
+                                                                          value = cr_coverage(f_true = p_true_test[,i_],
+                                                                                              f_post = pnorm((subart_mod$y_hat_test[,i_,])),
+                                                                                              prob = 0.5),
+                                                                          model = "suBART", fold = i,
+                                                                          mvn_dim = i_))
+
+          } # Generating the metric regarding each mvn_component
+
+          # Storing the correlation metrics
+          if(mvn_dim_== 2) {
+
+               # Doing for the correlation parameters
+               rho_ <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
+               rho_post <- subart_mod$Sigma_post[1,2,]/(sqrt(subart_mod$Sigma_post[1,1,])*sqrt(subart_mod$Sigma_post[2,2,]))
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_,
+                                                                                               f_post = matrix(rho_post,ncol = length(rho_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_post),y = rho_),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+          } else if(mvn_dim_== 3 ) {
+
+               # Comparing the true values for the \rho12, \rho13, and \rho23
+               rho_12 <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
+               rho_13 <- Sigma_[1,3]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[3,3]))
+               rho_23 <- Sigma_[2,3]/(sqrt(Sigma_[2,2])*sqrt(Sigma_[3,3]))
+               rho_12_post <- subart_mod$Sigma_post[1,2,]/(sqrt(subart_mod$Sigma_post[1,1,])*sqrt(subart_mod$Sigma_post[2,2,]))
+               rho_13_post <- subart_mod$Sigma_post[1,3,]/(sqrt(subart_mod$Sigma_post[1,1,])*sqrt(subart_mod$Sigma_post[3,3,]))
+               rho_23_post <- subart_mod$Sigma_post[2,3,]/(sqrt(subart_mod$Sigma_post[2,2,])*sqrt(subart_mod$Sigma_post[3,3,]))
+
+
+               # Storing the correlations
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_12,
+                                                                                               f_post = matrix(rho_12_post,ncol = length(rho_12_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_12_post),y = rho_12),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho12",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_13,
+                                                                                               f_post = matrix(rho_13_post,ncol = length(rho_13_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho13",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_13_post),y = rho_13),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho13",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                           value = cr_coverage(f_true = rho_23,
+                                                                                               f_post = matrix(rho_23_post,ncol = length(rho_23_post)),prob = 0.5),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho23",
+                                                                           fold = i))
+
+               correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                           value = rmse(x = mean(rho_23_post),y = rho_23),
+                                                                           model = "suBART",
+                                                                           mvn_dim = mvn_dim_,
+                                                                           param_index = "rho23",
+                                                                           fold = i))
+
+          }
+
+     }
+
+     return(list(comparison_metrics = comparison_metrics,
+                 correlation_metrics = correlation_metrics,
+                 subart_mod = subart_mod))
+}
+
+## This file stores all CV functions for each one of the models: BART, subart, mvBART
+cv_matrix_bayesSUR <- function(cv_element_,
+                             n_tree_,
+                             mvn_dim_,
+                             n_,
+                             p_,
+                             i,
+                             task_,
+                             n_mcmc_,
+                             n_burn_){
+
+     library(surbayes)
+
+     # Getting the data elements
+     x_train <- cv_element_$train$x
+     y_train <- cv_element_$train$y
+     x_test <- cv_element_$test$x
+     y_test <- cv_element_$test$y
+     y_true_train <- cv_element_$train$y_true
+     y_true_test <- cv_element_$test$y_true
+
+     if(task_ == "classification"){
+          z_true_train <- cv_element_$train$z_true
+          z_true_test <- cv_element_$test$z_true
+          z_train <- cv_element_$train$z
+          z_test <- cv_element_$test$z
+          p_true_train <- pnorm(cv_element_$train$z_true)
+          p_true_test <- pnorm(cv_element_$test$z_true)
+     }
+
+     # True Sigma element
+     Sigma_ <- cv_element_$train$Sigma
+
+     # Creating a list with multiple models for
+     bart_models <- vector("list",mvn_dim_)
+
+     # Generating the crossvalidaiton
+     comparison_metrics <- data.frame(metric = NULL,
+                                      value = NULL,
+                                      model = NULL,
+                                      mvn_dim = NULL,
+                                      fold = NULL)
+
+     # Creating the data.frame for the correlation parameters
+     correlation_metrics <- data.frame(metric = NULL,
+                                       value = NULL,
+                                       model = NULL,
+                                       mvn_dim = NULL,
+                                       param_index = NULL,
+                                       fold = NULL)
+
+     n_ <- nrow(x_train)
+     crps_pred_post_sample_train_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+     crps_pred_post_sample_test_bart <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+
+
+     # The frequentist SUR should be used only for the regression approach.
+     if(task_ == "regression"){
+          # Fittng the Fitting the Linear SUR
+          if(mvn_dim_==2){
+
+               # Recreate a data.frame in the shape of the single dataset.
+               colnames(y_train) <- colnames(y_test) <- paste0("y.",1:mvn_dim_)
+               train_data <- cbind(x_train,y_train)
+               test_data <- cbind(x_test,y_test)
+               eq1 <- as.formula( paste0("y.1 ~ ", paste0("X",1:NCOL(x_test),collapse = "+")) )
+               eq2 <- as.formula( paste0("y.2 ~ ", paste0("X",1:NCOL(x_test),collapse = "+")) )
+               eqSystem <- list( y.1 = eq1, y.2 = eq2)
+               names(eqSystem) <- NULL
+          } else {
+
+
+               # Recreate a data.frame in the shape of the single dataset.
+               colnames(y_train) <- colnames(y_test) <- paste0("y.",1:mvn_dim_)
+               train_data <- cbind(x_train,y_train)
+               eq1 <- as.formula( paste0("y.1 ~ ", paste0("X",1:NCOL(x_test),collapse = "+")) )
+               eq2 <- as.formula( paste0("y.2 ~ ", paste0("X",1:NCOL(x_test),collapse = "+")) )
+               eq3 <- as.formula( paste0("y.3 ~ ", paste0("X",1:NCOL(x_test),collapse = "+")) )
+               eqSystem <- list( y.1 = eq1, y.2 = eq2, y.3 = eq3)
+               names(eqSystem) <- NULL
+
+
+          }
+
+          # Loading package
+          library(systemfit)
+          library(surbayes)
+
+          # Doing the predictions with the SUR model
+          # sur_mod <- systemfit(eqSystem, method = "SUR", data =  train_data)
+          sur_mod <- surbayes::sur_sample(formula.list = eqSystem,
+                                data = train_data,
+                                M = (n_mcmc_-n_burn_))
+
+          # x111 <- x_test[1,,drop = FALSE]
+          # y111 <- y_test[1,,drop = FALSE]
+
+          # Doing for the first dimension
+          surmod_test_predict <- predict(sur_mod,newdata = cbind(x_test,y_test),nsims = (n_mcmc_-n_burn_))
+          surmod_train_predict <- predict(sur_mod,newdata = cbind(x_train,y_train),nsims = (n_mcmc_-n_burn_))
+
+          # Storing only the first observations
+          surmod_test_predict <- surmod_test_predict[1:nrow(x_test),,]
+          surmod_train_predict <- surmod_train_predict[1:nrow(x_test),,]
+
+          for(i_aux in 1:mvn_dim_){
+               aux_counter <- c(0,1:(mvn_dim_-1))
+               surmod_test_predict[,i_aux,] <- tcrossprod(as.matrix(cbind(1,x_test)),as.matrix(sur_mod$betadraw[,11*aux_counter[i_aux]+1:11]))
+               surmod_train_predict[,i_aux,] <- tcrossprod(as.matrix(cbind(1,x_train)),as.matrix(sur_mod$betadraw[,11*aux_counter[i_aux]+1:11]))
+
+          }
+
+
+
+          # New calculation of CRPS
+          n_ <- sur_mod$n
+          crps_pred_post_sample_train <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+          crps_pred_post_sample_test <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+          crps_pred_post_sample_train_f <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+          crps_pred_post_sample_test_f <- matrix(data = NA,nrow = n_,ncol = mvn_dim_)
+
+          for(ii in 1:n_){
+
+               for(i_ in 1:mvn_dim_){
+                    crps_pred_post_sample_train[ii, i_] <- scoringRules::crps_sample(y_true_train[ii,i_],dat = surmod_train_predict[ii,i_,])
+                    crps_pred_post_sample_test[ii,i_] <- scoringRules::crps_sample(y_true_test[ii,i_],dat = surmod_test_predict[ii,i_,])
+
+               }
+          }
+
+          sur_mod_sigma_array <- array(unlist(sur_mod$Sigmalist),dim = c(mvn_dim_,mvn_dim_,(n_mcmc_-n_burn_)))
+
+
+          # Generating the BART model
+          for(i_ in 1:mvn_dim_){
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
+                                                                          value =  rmse(x = colMeans(surmod_train_predict[,i_,]),
+                                                                                        y = y_true_train[,i_]),
+                                                                          model = "bayesSUR",
+                                                                          fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
+                                                                          value =  rmse(x = colMeans(surmod_test_predict[,i_,]),
+                                                                                        y = y_true_test[,i_]),
+                                                                          model = "bayesSUR",
+                                                                          fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_train",
+                                                                          value = mean(crps_pred_post_sample_train[,i_]),
+                                                                          model = "bayesSUR", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_test",
+                                                                          value = mean(crps_pred_post_sample_test[,i_]),
+                                                                          model = "bayesSUR", fold = i,
+                                                                          mvn_dim = i_))
+
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
+                                                                          value = pi_coverage(y = y_train[,i_],
+                                                                                              y_hat_post = (surmod_train_predict[,i_,]),
+                                                                                              sd_post = sqrt(sur_mod_sigma_array[i_,i_,]),
+                                                                                              prob = 0.5),
+                                                                          model  = "bayesSUR", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
+                                                                          value = pi_coverage(y = y_test[,i_],
+                                                                                              y_hat_post = (surmod_test_predict[,i_,]),
+                                                                                              sd_post = sqrt(sur_mod_sigma_array[i_,i_,]),
+                                                                                              prob = 0.5),
+                                                                          model  = "bayesSUR", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_train",
+                                                                          value = ci_coverage(y_ = y_true_train[,i_],
+                                                                                              y_hat_ = colMeans(surmod_train_predict[,i_,]),
+                                                                                              sd_ = sqrt(unlist(lapply(sur_mod$Sigmalist,function(x){x[i_,i_]}))),
+                                                                                              prob_ = 0.5),
+                                                                          model  = "bayesSUR", fold = i,
+                                                                          mvn_dim = i_))
+
+               comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_test",
+                                                                          value = ci_coverage(y_ = y_true_test[,i_],
+                                                                                              y_hat_ = colMeans(surmod_test_predict[,i_,]),
+                                                                                              sd_ = sqrt(unlist(lapply(sur_mod$Sigmalist,function(x){x[i_,i_]}))),
+                                                                                              prob_ = 0.5),
+                                                                          model  = "bayesSUR", fold = i,
+                                                                          mvn_dim = i_))
+
+
+          }
+
+
+     } # End of the if to (task_=="regression") for the SUR
+
+     # Storing the correlation metrics
+     if(mvn_dim_== 2) {
+
+          # Doing for the correlation parameters
+          rho_ <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
+          sur_mod_sigma_array <- array(unlist(sur_mod$Sigmalist),dim = c(2,2,2000))
+          rho_post <- sur_mod_sigma_array[1,2,]/(sqrt(sur_mod_sigma_array[1,1,])*sqrt(sur_mod_sigma_array[2,2,]))
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                      value = cr_coverage(f_true = rho_,
+                                                                                          f_post = matrix(rho_post,ncol = length(rho_post)),prob = 0.5),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho12",
+                                                                      fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                      value = rmse(x = mean(rho_post),y = rho_),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho12",
+                                                                      fold = i))
+
+     } else if(mvn_dim_== 3 ) {
+
+          # Comparing the true values for the \rho12, \rho13, and \rho23
+          rho_12 <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
+          rho_13 <- Sigma_[1,3]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[3,3]))
+          rho_23 <- Sigma_[2,3]/(sqrt(Sigma_[2,2])*sqrt(Sigma_[3,3]))
+          sur_mod_sigma_array <- array(unlist(sur_mod$Sigmalist),dim = c(3,3,2000))
+
+          rho_12_post <- sur_mod_sigma_array[1,2,]/(sqrt(sur_mod_sigma_array[1,1,])*sqrt(sur_mod_sigma_array[2,2,]))
+          rho_13_post <- sur_mod_sigma_array[1,3,]/(sqrt(sur_mod_sigma_array[1,1,])*sqrt(sur_mod_sigma_array[3,3,]))
+          rho_23_post <- sur_mod_sigma_array[2,3,]/(sqrt(sur_mod_sigma_array[2,2,])*sqrt(sur_mod_sigma_array[3,3,]))
+
+
+          # Storing the correlations
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                      value = cr_coverage(f_true = rho_12,
+                                                                                          f_post = matrix(rho_12_post,ncol = length(rho_12_post)),prob = 0.5),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho12",
+                                                                      fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                      value = rmse(x = mean(rho_12_post),y = rho_12),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho12",
+                                                                      fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                      value = cr_coverage(f_true = rho_13,
+                                                                                          f_post = matrix(rho_13_post,ncol = length(rho_13_post)),prob = 0.5),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho13",
+                                                                      fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                      value = rmse(x = mean(rho_13_post),y = rho_13),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho13",
+                                                                      fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
+                                                                      value = cr_coverage(f_true = rho_23,
+                                                                                          f_post = matrix(rho_23_post,ncol = length(rho_23_post)),prob = 0.5),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho23",
+                                                                      fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
+                                                                      value = rmse(x = mean(rho_23_post),y = rho_23),
+                                                                      model = "bayesSUR",
+                                                                      mvn_dim = mvn_dim_,
+                                                                      param_index = "rho23",
+                                                                      fold = i))
+
+
+     }
+
+
+     if(mvn_dim_==2){
+          sur_mod_sigma_array <- array(unlist(sur_mod$Sigmalist),dim = c(2,2,2000))
+     } else if (mvn_dim_==3) {
+          sur_mod_sigma_array <- array(unlist(sur_mod$Sigmalist),dim = c(3,3,2000))
+     }
+
+     # Doing for the main sigma parameters
+     for(jj_ in 1:mvn_dim_){
+          sigma_ <- sqrt(Sigma_[jj_,jj_])
+          sigma_post <- sqrt(sur_mod_sigma_array[jj_,jj_,])
+          correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
+                                                                       value = cr_coverage(f_true = sigma_,
+                                                                                           f_post = matrix(sigma_post,ncol = length(sigma_post)),
+                                                                                           prob = 0.5),
+                                                                       model = "bayesSUR",
+                                                                       mvn_dim = mvn_dim_,
+                                                                       param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                       fold = i))
+
+          correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
+                                                                       value = rmse(x = mean(sigma_post),y = sigma_),
+                                                                       model = 'bayesSUR',
+                                                                       mvn_dim = mvn_dim_,
+                                                                       param_index = paste0("sigma",jj_,jj_,collapse = ""),
+                                                                       fold = i))
+     }
+
+
+
+     # Return the cross-validation matrix
+     return(list(comparison_metrics = comparison_metrics,
+                 correlation_metrics = correlation_metrics,
+                 sur_mod = sur_mod))
+
+
+}
+
