@@ -28,6 +28,12 @@ spectrum0.ar <- function (x){
         return(list(spec = v0, order = order))
 }
 
+#' Calculate the ESS
+#'
+#' @param x a single-chain from a MCMC sampler
+#'
+#' @export
+#'
 ESS <- function (x){
         if(!is.matrix(x)){
                 x <- matrix(x, ncol = 1)
