@@ -1130,25 +1130,25 @@ cv_matrix_skewBART <- function(cv_element_,
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
                                                                      value =  rmse(x = fitted_Multiskewbart$f_hat_train_mean[,i_],
                                                                                    y = y_true_train[,i_]),
-                                                                     model = "skewBART",
+                                                                     model = "mvBART",
                                                                      fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
                                                                      value =  rmse(x = fitted_Multiskewbart$f_hat_test_mean[,i_],
                                                                                    y = y_true_test[,i_]),
-                                                                     model = "skewBART",
+                                                                     model = "mvBART",
                                                                      fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_train",
                                                                      value = mean(crps_pred_post_sample_train_f[,i_]),
-                                                                     model = "skewBART", fold = i,
+                                                                     model = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_test",
                                                                      value = mean(crps_pred_post_sample_test_f[,i_]),
-                                                                     model = "skewBART", fold = i,
+                                                                     model = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
@@ -1156,7 +1156,7 @@ cv_matrix_skewBART <- function(cv_element_,
                                                                                          y_hat_post = (fitted_Multiskewbart$f_hat_test[,i_,]),
                                                                                          sd_post = sqrt(fitted_Multiskewbart$Sigma[i_,i_,]),
                                                                                          prob = 0.5),
-                                                                     model  = "skewBART", fold = i,
+                                                                     model  = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
@@ -1164,7 +1164,7 @@ cv_matrix_skewBART <- function(cv_element_,
                                                                                          y_hat_post =  (fitted_Multiskewbart$f_hat_train[,i_,]),
                                                                                          sd_post = sqrt(fitted_Multiskewbart$Sigma[i_,i_,]),
                                                                                          prob = 0.5,n_mcmc_replications = 100),
-                                                                     model  = "skewBART", fold = i,
+                                                                     model  = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
 
@@ -1173,7 +1173,7 @@ cv_matrix_skewBART <- function(cv_element_,
                                                                                          y_hat_ = fitted_Multiskewbart$f_hat_test_mean[,i_],
                                                                                          sd_ = mean(sqrt(fitted_Multiskewbart$Sigma[i_,i_,])),
                                                                                          prob_ = 0.5),
-                                                                     model  = "skewBART", fold = i,
+                                                                     model  = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_train",
@@ -1181,21 +1181,21 @@ cv_matrix_skewBART <- function(cv_element_,
                                                                                          y_hat_ =  fitted_Multiskewbart$f_hat_train_mean[,i_],
                                                                                          sd_ = mean(sqrt(fitted_Multiskewbart$Sigma[i_,i_,])),
                                                                                          prob_ = 0.5),
-                                                                     model  = "skewBART", fold = i,
+                                                                     model  = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
                                                                      value = cr_coverage(f_true = y_true_test[,i_],
                                                                                          f_post = (fitted_Multiskewbart$f_hat_test[,i_,]),
                                                                                          prob = 0.5),
-                                                                     model  = "skewBART", fold = i,
+                                                                     model  = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
           comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
                                                                      value = cr_coverage(f_true = y_true_train[,i_],
                                                                                          f_post =  (fitted_Multiskewbart$f_hat_train[,i_,]),
                                                                                          prob = 0.5),
-                                                                     model  = "skewBART", fold = i,
+                                                                     model  = "mvBART", fold = i,
                                                                      mvn_dim = i_))
 
      }
@@ -1205,14 +1205,14 @@ cv_matrix_skewBART <- function(cv_element_,
      correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
                                                                  value = cr_coverage(f_true = rho_,
                                                                                      f_post = matrix(rho_post,ncol = length(rho_post)),prob = 0.5),
-                                                                 model = "skewBART",
+                                                                 model = "mvBART",
                                                                  mvn_dim = mvn_dim_,
                                                                  param_index = "rho12",
                                                                  fold = i))
 
      correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
                                                                  value = rmse(x = mean(rho_post),y = rho_),
-                                                                 model = "skewBART",
+                                                                 model = "mvBART",
                                                                  mvn_dim = mvn_dim_,
                                                                  param_index = "rho12",
                                                                  fold = i))
@@ -1736,299 +1736,6 @@ stan_mvn <- function(cv_element_,
 
 }
 
-# Creating the function for the STAN code
-# Generating the model results
-skew_bart <- function(cv_element_,
-                      n_tree_,
-                      mvn_dim_,
-                      n_,
-                      p_,
-                      i,
-                      task_){
-
-     # Stan SUR ####
-     library(skewBART)
-     if(task_ == "classification"){
-          stop("Not allowed probit mod here.")
-     }
-
-     # Getting the data elements
-     x_train <- cv_element_$train$x
-     y_train <- cv_element_$train$y
-     x_test <- cv_element_$test$x
-     y_test <- cv_element_$test$y
-     y_true_train <- cv_element_$train$y_true
-     y_true_test <- cv_element_$test$y_true
-
-
-     # Getting the true model
-     if(task_ == "classification"){
-          z_true_train <- cv_element_$train$z_true
-          z_true_test <- cv_element_$test$z_true
-          z_train <- cv_element_$train$z
-          z_test <- cv_element_$test$z
-          p_true_train <- pnorm(cv_element_$train$z_true)
-          p_true_test <- pnorm(cv_element_$test$z_true)
-     }
-
-
-     # True Sigma element
-     Sigma_ <- cv_element_$train$Sigma
-
-     # Generating the crossvalidaiton
-     comparison_metrics <- data.frame(metric = NULL,
-                                      value = NULL,
-                                      model = NULL,
-                                      mvn_dim = NULL,
-                                      fold = NULL)
-
-     # Creating the data.frame for the correlation parameters
-     correlation_metrics <- data.frame(metric = NULL,
-                                       value = NULL,
-                                       model = NULL,
-                                       mvn_dim = NULL,
-                                       param_index = NULL,
-                                       fold = NULL)
-
-     hypers <- skewBART::Hypers(as.matrix(x_train), as.matrix(y_train),
-                                num_tree = n_tree_)
-
-     opts <- skewBART::Opts(num_burn = 1000, num_save = 2000, update_Sigma_mu = FALSE,
-                            update_s = FALSE, update_alpha = FALSE)
-
-     fitted_Multiskewbart <- skewBART::MultiskewBART(X = x_train, Y = y_train, test_X = x_test,
-                                                     do_skew = FALSE,hypers = hypers,opts = opts)
-
-
-
-     #
-     #   # New calculation of CRPS
-     #   n_mcmc_ <- dim(fitted_Multiskewbart$y_hat_train)[3]
-     #   n_ <- nrow(fitted_Multiskewbart$y_hat_train)
-     #   crps_pred_post_sample_train <- matrix(data = NA,nrow = n_,ncol = 2)
-     #   crps_pred_post_sample_test <- matrix(data = NA,nrow = n_,ncol = 2)
-     #   crps_pred_post_sample_train_f <- matrix(data = NA,nrow = n_,ncol = 2)
-     #   crps_pred_post_sample_test_f <- matrix(data = NA,nrow = n_,ncol = 2)
-     #
-     #
-     #   for(ii in 1:n_){
-     #        # Here uses y,
-     #        # dummy_aux <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$y_hat_train[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-     #        # dummy_aux_test <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$y_hat_test[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-     #        #
-     #        # # Here uses f, the other uses f
-     #        # dummy_aux_f <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$f_hat_train[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-     #        # dummy_aux_test_f <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$f_hat_test[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-     #
-     #
-     #        for(i_ in 1:2){
-     #             crps_pred_post_sample_train[ii, i_] <- scoringRules::crps_sample(y_true_train[ii,i_],dat = fitted_Multiskewbart$y_hat_train[ii,i_,])
-     #             crps_pred_post_sample_test[ii,i_] <- scoringRules::crps_sample(y_true_test[ii,i_],dat = fitted_Multiskewbart$y_hat_test[ii,i_,])
-     #
-     #             crps_pred_post_sample_train_f[ii, i_] <- scoringRules::crps_sample(y_true_train[ii,i_],dat = fitted_Multiskewbart$f_hat_train[ii,i_,])
-     #             crps_pred_post_sample_test_f[ii,i_] <- scoringRules::crps_sample(y_true_test[ii,i_],dat = fitted_Multiskewbart$f_hat_test[ii,i_,])
-     #        }
-     #   }
-     # =============
-
-     # New calculation of CRPS
-     n_mcmc_ <- dim(fitted_Multiskewbart$y_hat_train)[3]
-     n_ <- nrow(fitted_Multiskewbart$y_hat_train)
-     crps_pred_post_sample_train <- matrix(data = NA,nrow = n_,ncol = 2)
-     crps_pred_post_sample_test <- matrix(data = NA,nrow = n_,ncol = 2)
-     crps_pred_post_sample_train_f <- matrix(data = NA,nrow = n_,ncol = 2)
-     crps_pred_post_sample_test_f <- matrix(data = NA,nrow = n_,ncol = 2)
-
-     for(ii in 1:n_){
-          # Here uses y,
-          # dummy_aux <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$y_hat_train[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-          # dummy_aux_test <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$y_hat_test[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-          #
-          # # Here uses f, the other uses f
-          # dummy_aux_f <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$f_hat_train[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-          # dummy_aux_test_f <- mvtnorm::rmvnorm(n = n_mcmc_,mean = fitted_Multiskewbart$f_hat_test[ii,,i],sigma = fitted_Multiskewbart$Sigma[,,i])
-
-
-          for(i_ in 1:2){
-               crps_pred_post_sample_train[ii, i_] <- scoringRules::crps_sample(y_true_train[ii,i_],dat = fitted_Multiskewbart$y_hat_train[ii,i_,])
-               crps_pred_post_sample_test[ii,i_] <- scoringRules::crps_sample(y_true_test[ii,i_],dat = fitted_Multiskewbart$y_hat_test[ii,i_,])
-
-               crps_pred_post_sample_train_f[ii, i_] <- scoringRules::crps_sample(y_true_train[ii,i_],dat = fitted_Multiskewbart$f_hat_train[ii,i_,])
-               crps_pred_post_sample_test_f[ii,i_] <- scoringRules::crps_sample(y_true_test[ii,i_],dat = fitted_Multiskewbart$f_hat_test[ii,i_,])
-          }
-     }
-
-     for(i_ in 1:2){
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
-                                                                     value =  rmse(x = fitted_Multiskewbart$y_hat_train_mean[,i_],
-                                                                                   y = y_true_train[,i_]),
-                                                                     model = "skewBART",
-                                                                     fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
-                                                                     value =  rmse(x = fitted_Multiskewbart$y_hat_test_mean[,i_],
-                                                                                   y = y_true_test[,i_]),
-                                                                     model = "skewBART",
-                                                                     fold = i,
-                                                                     mvn_dim = i_))
-
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_train",
-                                                                     value = mean(crps_pred_post_sample_train[,i_]),
-                                                                     model = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_test",
-                                                                     value = mean(crps_pred_post_sample_test[,i_]),
-                                                                     model = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
-                                                                     value = pi_coverage(y = y_test[,i_],
-                                                                                         y_hat_post = (fitted_Multiskewbart$y_hat_test[,i_,]),
-                                                                                         sd_post = sqrt(fitted_Multiskewbart$Sigma[i_,i_,]),
-                                                                                         prob = 0.5),
-                                                                     model  = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
-                                                                     value = pi_coverage(y = y_train[,i_],
-                                                                                         y_hat_post =  (fitted_Multiskewbart$y_hat_train[,i_,]),
-                                                                                         sd_post = sqrt(fitted_Multiskewbart$Sigma[i_,i_,]),
-                                                                                         prob = 0.5,n_mcmc_replications = 100),
-                                                                     model  = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_test",
-                                                                     value = ci_coverage(y_ = y_true_test[,i_],
-                                                                                         y_hat_ = fitted_Multiskewbart$y_hat_test_mean[,i_],
-                                                                                         sd_ = mean(sqrt(fitted_Multiskewbart$Sigma[i_,i_,])),
-                                                                                         prob_ = 0.5),
-                                                                     model  = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_train",
-                                                                     value = ci_coverage(y_ = y_true_train[,i_],
-                                                                                         y_hat_ =  fitted_Multiskewbart$y_hat_train_mean[,i_],
-                                                                                         sd_ = mean(sqrt(fitted_Multiskewbart$Sigma[i_,i_,])),
-                                                                                         prob_ = 0.5),
-                                                                     model  = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
-                                                                     value = cr_coverage(f_true = y_true_test[,i_],
-                                                                                         f_post = (fitted_Multiskewbart$y_hat_test[,i_,]),
-                                                                                         prob = 0.5),
-                                                                     model  = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
-                                                                     value = cr_coverage(f_true = y_true_train[,i_],
-                                                                                         f_post =  (fitted_Multiskewbart$y_hat_train[,i_,]),
-                                                                                         prob = 0.5),
-                                                                     model  = "skewBART", fold = i,
-                                                                     mvn_dim = i_))
-
-          # USING THE f as the output
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_train",
-                                                                     value =  rmse(x = fitted_Multiskewbart$f_hat_train_mean[,i_],
-                                                                                   y = y_true_train[,i_]),
-                                                                     model = "skewBART2",
-                                                                     fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "rmse_test",
-                                                                     value =  rmse(x = fitted_Multiskewbart$f_hat_test_mean[,i_],
-                                                                                   y = y_true_test[,i_]),
-                                                                     model = "skewBART2",
-                                                                     fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_train",
-                                                                     value = mean(crps_pred_post_sample_train_f[,i_]),
-                                                                     model = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "crps_test",
-                                                                     value = mean(crps_pred_post_sample_test_f[,i_]),
-                                                                     model = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_test",
-                                                                     value = pi_coverage(y = y_test[,i_],
-                                                                                         y_hat_post = (fitted_Multiskewbart$f_hat_test[,i_,]),
-                                                                                         sd_post = sqrt(fitted_Multiskewbart$Sigma[i_,i_,]),
-                                                                                         prob = 0.5),
-                                                                     model  = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "pi_train",
-                                                                     value = pi_coverage(y = y_train[,i_],
-                                                                                         y_hat_post =  (fitted_Multiskewbart$f_hat_train[,i_,]),
-                                                                                         sd_post = sqrt(fitted_Multiskewbart$Sigma[i_,i_,]),
-                                                                                         prob = 0.5,n_mcmc_replications = 100),
-                                                                     model  = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_test",
-                                                                     value = ci_coverage(y_ = y_true_test[,i_],
-                                                                                         y_hat_ = fitted_Multiskewbart$f_hat_test_mean[,i_],
-                                                                                         sd_ = mean(sqrt(fitted_Multiskewbart$Sigma[i_,i_,])),
-                                                                                         prob_ = 0.5),
-                                                                     model  = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "ci_train",
-                                                                     value = ci_coverage(y_ = y_true_train[,i_],
-                                                                                         y_hat_ =  fitted_Multiskewbart$f_hat_train_mean[,i_],
-                                                                                         sd_ = mean(sqrt(fitted_Multiskewbart$Sigma[i_,i_,])),
-                                                                                         prob_ = 0.5),
-                                                                     model  = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_test",
-                                                                     value = cr_coverage(f_true = y_true_test[,i_],
-                                                                                         f_post = (fitted_Multiskewbart$f_hat_test[,i_,]),
-                                                                                         prob = 0.5),
-                                                                     model  = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-          comparison_metrics <- rbind(comparison_metrics, data.frame(metric = "cr_train",
-                                                                     value = cr_coverage(f_true = y_true_train[,i_],
-                                                                                         f_post =  (fitted_Multiskewbart$f_hat_train[,i_,]),
-                                                                                         prob = 0.5),
-                                                                     model  = "skewBART2", fold = i,
-                                                                     mvn_dim = i_))
-
-     }
-     # Doing for the correlation parameters
-     rho_ <- Sigma_[1,2]/(sqrt(Sigma_[1,1])*sqrt(Sigma_[2,2]))
-     rho_post <- fitted_Multiskewbart$Sigma[1,2,]/(sqrt(fitted_Multiskewbart$Sigma[1,1,])*sqrt(fitted_Multiskewbart$Sigma[2,2,]))
-     correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "cr_cov",
-                                                                 value = cr_coverage(f_true = rho_,
-                                                                                     f_post = matrix(rho_post,ncol = length(rho_post)),prob = 0.5),
-                                                                 model = "skewBART",
-                                                                 mvn_dim = mvn_dim_,
-                                                                 param_index = "rho12",
-                                                                 fold = i))
-
-     correlation_metrics <- rbind(correlation_metrics,data.frame(metric = "rmse",
-                                                                 value = rmse(x = mean(rho_post),y = rho_),
-                                                                 model = "skewBART",
-                                                                 mvn_dim = mvn_dim_,
-                                                                 param_index = "rho12",
-                                                                 fold = i))
-
-
-     return(list(comparison_metrics = comparison_metrics,
-                 correlation_metrics = correlation_metrics))
-
-}
-
 
 # Creating the function for the STAN code
 # Generating the model results
@@ -2039,7 +1746,9 @@ cv_matrix_stan_mvn <- function(cv_element_,
                      p_,
                      i,
                      stan_model_regression,
-                     task_){
+                     task_,
+                     n_mcmc_,
+                     n_burn_){
 
      # Stan SUR ####
      library(rstan)
@@ -2104,8 +1813,8 @@ cv_matrix_stan_mvn <- function(cv_element_,
                pars = c("y_hat_train","y_hat_test","Sigma"),
                include = TRUE,
                chains = 1,
-               iter = 2500,
-               warmup = 500
+               iter = n_mcmc_,
+               warmup = n_burn_
           )
 
      } else if(task_ == "classification"){
@@ -2125,8 +1834,8 @@ cv_matrix_stan_mvn <- function(cv_element_,
                pars = c("z_hat_train","z_hat_test","Omega"),
                include = TRUE,
                chains = 1,
-               iter = 2500,
-               warmup = 500
+               iter = n_mcmc_,
+               warmup = n_burn_
           )
 
      }
@@ -2546,7 +2255,7 @@ cv_matrix_stan_mvn <- function(cv_element_,
 
      return(list(comparison_metrics = comparison_metrics,
                  correlation_metrics = correlation_metrics,
-                 model = stan_samples_regression))
+                 model = stan_samples_class))
 
 }
 
