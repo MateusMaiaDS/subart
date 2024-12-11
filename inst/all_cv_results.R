@@ -92,7 +92,7 @@ result <- foreach(i = 1:n_rep,.packages = c("dbarts","surbayes","dplyr","subart"
                                           n_mcmc_ = n_mcmc_,
                                           n_burn_ = n_burn_)
      } else if (model == 'bayesSUR' & task_ == 'regression'){
-             aux_ <- cv_matrix_bayesSUR(cv_element_ = cv_[[i]],
+             aux <- cv_matrix_bayesSUR(cv_element_ = cv_[[i]],
                                                 n_tree_ = n_tree_,
                                                 mvn_dim_ = mvn_dim_,
                                                 n_ = n_,
