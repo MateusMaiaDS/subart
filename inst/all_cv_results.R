@@ -10,10 +10,10 @@ p_ <- 10
 n_tree_ <- 50
 n_mcmc_ <- 5000
 n_burn_ <- 1000
-mvn_dim_ <- 3
-task_ <- "regression" # For this it can be either 'classification' or 'regression'
+mvn_dim_ <- 2
+task_ <- "classification" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
-
+model <- "bayesSUR"
 
 # Printing whcih model is being generated
 cat("n_", n_, "p_" , p_, "tree", n_tree_, "mvn_dim", mvn_dim_, "task", task_, "sim " , sim_)
@@ -49,6 +49,9 @@ i <- 1
 # number_cores <- 20
 # cl <- parallel::makeCluster(number_cores)
 # doParallel::registerDoParallel(cl)
+if(model == "bayesSUR" & task_ == "classification"){
+     source("inst/stan_classification_compile.R")
+}
 
 # result <- foreach(i = 1:n_rep,.packages = c("dbarts","systemfit","dplyr","subart","skewBART")) %dopar%{
 
@@ -86,6 +89,28 @@ i <- 1
                                          task_ = task_,
                                          n_mcmc_ = n_mcmc_,
                                          n_burn_ = n_burn_)
+
+     aux_skewBART <- cv_matrix_skewBART(cv_element_ = cv_[[i]],
+                                        n_tree_ = n_tree_,
+                                        mvn_dim_ = mvn_dim_,
+                                        n_ = n_,
+                                        p_ = p_,
+                                        i =  i,
+                                        task_ = task_,
+                                        n_mcmc_ = n_mcmc_,
+                                        n_burn_ = n_burn_)
+
+     aux_stan_class <- cv_matrix_stan_mvn(cv_element_ = cv_[[i]],
+                                          n_tree_ = n_tree_,
+                                          mvn_dim_ = mvn_dim_,
+                                          n_ = n_,
+                                          p_ = p_,
+                                          i =  i,
+                                          task_ = task_,
+                                          stan_model_regression  = stan_model_regression,
+                                          n_mcmc_ = n_mcmc_,
+                                          n_burn_ = n_burn_)
+
 
 # stopCluster(cl)
 
