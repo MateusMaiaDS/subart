@@ -16,3 +16,7 @@ true_sigma <- sim_data$Sigma[j,j]
 
 # Adjusting a subart model
 subart_mod <- subart(x_train = x_train,y_mat = y_train,x_test = x_train,n_tree = 50)
+
+
+# Running all arguments as default
+

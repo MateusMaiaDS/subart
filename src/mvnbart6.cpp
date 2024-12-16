@@ -2343,6 +2343,8 @@ Rcpp::List cppbart_univariate(arma::mat x_train,
                // Storing all used vars
                arma::mat mat_used_vars(data.n_tree, data.x_train.n_cols);
 
+               // Rcpp::Rcout << "could enter the loop" << endl;
+               // Rcpp::Rcout << "DImensions of Sigma: " << data.Sigma.size() << endl;
                double Sigma_j_j = data.Sigma(j,j);
 
                double v = Sigma_j_j;
@@ -2362,6 +2364,7 @@ Rcpp::List cppbart_univariate(arma::mat x_train,
                     arma::vec y_j_test_hat(data.x_test.n_rows,arma::fill::zeros);
 
                     // Updating the partial residuals
+                    // Rcpp::Rcout << "Error on partial residuals calculation " << endl;
                     if(data.n_tree>1){
                          partial_residuals = data.y_mat.col(j)-sum_exclude_col(tree_fits_store.slice(j),t);
                     } else {
@@ -2375,7 +2378,7 @@ Rcpp::List cppbart_univariate(arma::mat x_train,
                          verb = 0.1;
                     }
 
-                    Rcpp::Rcout << "Problem before the verb" << endl;
+                    // Rcpp::Rcout << "Problem before the verb" << endl;
                     // Selecting the verb
                     if(verb < 0.25){
                          data.move_proposal(0)++;
@@ -2387,7 +2390,7 @@ Rcpp::List cppbart_univariate(arma::mat x_train,
                          data.move_proposal(2)++;
                          change_uni(all_forest.trees[curr_tree_counter], data, partial_residuals,j);
                     }
-                    Rcpp::Rcout << "Problem after the verb" << endl;
+                    // Rcpp::Rcout << "Problem after the verb" << endl;
 
 
 
@@ -2425,12 +2428,15 @@ Rcpp::List cppbart_univariate(arma::mat x_train,
           // Storing cube of used vars
           all_j_tree_var(i) = cube_used_vars;
 
-          // std::cout << "Error Tau: " << data.tau<< endl;
+          // std::cout << "Error Tau: " << endl;
+
           if(update_Sigma){
                // Updating or not a_j
                if(hier_prior_bool){
                     update_a_j(data);
                }
+               // std::cout << "Error SIGMA: " << endl;
+
                updateSigma(y_mat_hat, data);
           }
 

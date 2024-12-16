@@ -269,7 +269,13 @@ subart <- function(x_train,
                      lambda <- (nsigma*nsigma*qchi)/df
                      rate_tau <- (lambda*df)/2
 
-                     S_0_wish <- 2*df*diag(c(rate_tau))
+                     S_0_wish <- if(ncol(y_mat)!=1){
+                          2*df*diag(c(rate_tau))
+                     } else {
+                          matrix(2*df*c(rate_tau),ncol = 1,nrow = 1)
+                     }
+
+
 
              } else {
                      A_j <- numeric()
@@ -280,13 +286,21 @@ subart <- function(x_train,
                                                         method = "Brent",lower = 0.00001,upper = 100)$par
                      }
 
-                     S_0_wish <- diag(A_j)
+                     S_0_wish <- if(ncol(y_mat)!=1){
+                          diag(A_j)
+                     } else {
+                          matrix(A_j,ncol = 1,nrow = 1)
+                     }
              }
 
 
              # Call the bart function
              if(is.null(Sigma_init)){
-                     Sigma_init <- diag(nsigma^2)
+                     Sigma_init <- if(ncol(y_mat)!=1){
+                          diag(nsigma^2)
+                     } else {
+                          matrix(nsigma^2,ncol = 1,nrow = 1)
+                     }
              }
 
              mu_init <- apply(y_mat_scale,2,mean,na.rm = TRUE)
