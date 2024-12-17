@@ -16,27 +16,28 @@ y_train <- sim_data$y[,j,drop=FALSE]
 true_sigma <- sim_data$Sigma[j,j]
 
 # Adjusting a subart model
-subart_mod <- subart(x_train = x_train,y_mat = y_train,x_test = x_train,n_tree = 50)
+subart_mod <- subart(x_train = x_train,y_mat = y_train,x_test = x_train,n_tree = 50,hier_prior_bool = FALSE)
 subart_mod$all_Sigma_post[1,1,] %>% plot(type='l')
 subart_mod$y_hat_mean
 
 # Running all arguments as default
-y_mat <- y_train
-x_test <- x_train
-n_tree = 50
-node_min_size = 5
-n_mcmc = 2000
-n_burn = 500
-alpha = 0.95
-beta = 2
-nu = 3
-sigquant = 0.9
-kappa = 2
-numcut = 100L # Defining the grid of split rules
-usequants = FALSE
-m = 20 # Degrees of freed for the classification setting.
-varimportance = TRUE
-hier_prior_bool = TRUE # Use a hierachical prior or not;
-specify_variables = NULL # Specify variables for each dimension (j) by name or index for.
-diagnostic = TRUE
-
+run_arguments <- function(){
+     y_mat <- y_train
+     x_test <- x_train
+     n_tree = 50
+     node_min_size = 5
+     n_mcmc = 2000
+     n_burn = 500
+     alpha = 0.95
+     beta = 2
+     nu = 3
+     sigquant = 0.9
+     kappa = 2
+     numcut = 100L # Defining the grid of split rules
+     usequants = FALSE
+     m = 20 # Degrees of freed for the classification setting.
+     varimportance = TRUE
+     hier_prior_bool = TRUE # Use a hierachical prior or not;
+     specify_variables = NULL # Specify variables for each dimension (j) by name or index for.
+     diagnostic = TRUE
+}
