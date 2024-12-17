@@ -6,7 +6,7 @@ library(doParallel)
 devtools::load_all()
 seed_ <- 43
 set.seed(seed_) # ORIGINal is 42
-n_ <- 1000
+n_ <- 500
 p_ <- 10
 n_tree_ <- 100
 n_mcmc_ <- 5000

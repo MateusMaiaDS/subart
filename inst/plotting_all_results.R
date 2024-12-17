@@ -1,13 +1,11 @@
 # Plotting results
 library(tidyverse)
 rm(list=ls())
-devtools::load_all()
-setwd("/users/research/mmarques/spline_bart_lab/spline_bart_lab/mvnbart6/")
 set.seed(42)
-n_ <- 250
+n_ <- 500
 p_ <- 10
 n_tree_ <- 100
-mvn_dim_ <- 2
+mvn_dim_ <- 3
 seed_ <- 43
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
@@ -25,6 +23,8 @@ models <- if (task_ == "classification") {
 
 # Getting the directory path where all results are stored (Change depending where you running this)
 results_path <- paste0("/users/research/mmarques/r1_rebuttal_results/")
+save_plots_path <- paste0("/users/research/mmarques/r1_rebuttal_plots/")
+
 
 # Generating the result df that will be stored
 result_df <- data.frame()
@@ -158,12 +158,12 @@ if(task_=="regression"){
 
      # # Export as TIFF
      # # (attention change your path here)
-     # ggsave(paste0("/localusers/researchers/mmarques/spline_bart_lab/mvbart6_plots_skew/may2024_",sim_,"_",task_,"_",n_,"_",mvn_dim_,".tiff"), plot = main_plot,
-     #        width = width_inches, height = height_inches, dpi = 300)
+     # ggsave(paste0(save_plots_path,sim_,"_",task_,"_",n_,"_",mvn_dim_,".tiff"), plot = main_plot,
+     #        width = width_inches, height = height_inches,dpi = 300)
      #
      # # Export as PDF
-     # ggsave(paste0("/localusers/researchers/mmarques/spline_bart_lab/mvbart6_plots_skew/FIG_4_september_new_2024",sim_,"_",task_,"_",n_,"_",mvn_dim_,".pdf"), plot = main_plot,
-     #        width = width_inches, height = height_inches)
+     ggsave(paste0(save_plots_path,sim_,"_",task_,"_",n_,"_",mvn_dim_,".pdf"), plot = main_plot,
+            width = width_inches, height = height_inches)
 } # End of iteration
 
 # Plotting results for the CR coverage
