@@ -10,15 +10,19 @@ n <- 250
 n_tree <- 100
 
 # Generating the simulation friedman1
-sim_data <- subart::sim_mvn_friedman1(n = 250,p = 10,mvn_dim = 2,Sigma = diag(nrow=2))
+sim_data <- sim_mvn_friedman1(n = 250,p = 10,mvn_dim = 2,Sigma = diag(nrow=2))
 x_train <- sim_data$x
 y_train <- sim_data$y[,j,drop=FALSE]
 true_sigma <- sim_data$Sigma[j,j]
 
 # Adjusting a subart model
-subart_mod <- subart(x_train = x_train,y_mat = y_train,x_test = x_train,n_tree = 50,hier_prior_bool = FALSE)
-subart_mod$all_Sigma_post[1,1,] %>% plot(type='l')
-subart_mod$y_hat_mean
+subart_mod <- subart(x_train = x_train,
+                     y_mat = y_train,
+                     x_test = x_train,
+                     n_tree = n_tree,hier_prior_bool = TRUE)
+bart_mod <- dbarts::bart(x.train = x_train,y.train = y_train,x.test = x_train,ntree = n_tree,ndpost = 2000,nskip = 0)
+sqrt(subart_mod$all_Sigma_post[1,1,]) %>% plot(type='l',ylim = range(bart_mod$sigma,sqrt(subart_mod$all_Sigma_post)))
+lines(bart_mod$sigma, col = 'blue')
 
 # Running all arguments as default
 run_arguments <- function(){
