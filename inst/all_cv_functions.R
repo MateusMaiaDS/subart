@@ -240,23 +240,23 @@ cv_matrix_bart <- function(cv_element_,
 
                 # Doing for the main sigma parameters
                 if(task_=="regreesion"){
-                sigma_ <- sqrt(Sigma_[i_,i_])
-                sigma_post <- bart_models[[i_]]$sigma
-                correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
-                                                                             value = cr_coverage(f_true = sigma_,
-                                                                                                 f_post = matrix(sigma_post,ncol = length(sigma_post)),
-                                                                                                 prob = 0.5),
-                                                                             model = "BART",
-                                                                             mvn_dim = mvn_dim_,
-                                                                             param_index = paste0("sigma",i_,i_,collapse = ""),
-                                                                             fold = i))
+                        sigma_ <- sqrt(Sigma_[i_,i_])
+                        sigma_post <- bart_models[[i_]]$sigma
+                        correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
+                                                                                     value = cr_coverage(f_true = sigma_,
+                                                                                                         f_post = matrix(sigma_post,ncol = length(sigma_post)),
+                                                                                                         prob = 0.5),
+                                                                                     model = "BART",
+                                                                                     mvn_dim = mvn_dim_,
+                                                                                     param_index = paste0("sigma",i_,i_,collapse = ""),
+                                                                                     fold = i))
 
-                correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
-                                                                             value = rmse(x = mean(sigma_post),y = sigma_),
-                                                                             model = 'BART',
-                                                                             mvn_dim = mvn_dim_,
-                                                                             param_index = paste0("sigma",i_,i_,collapse = ""),
-                                                                             fold = i))
+                        correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
+                                                                                     value = rmse(x = mean(sigma_post),y = sigma_),
+                                                                                     model = 'BART',
+                                                                                     mvn_dim = mvn_dim_,
+                                                                                     param_index = paste0("sigma",i_,i_,collapse = ""),
+                                                                                     fold = i))
 
                 }
         }
@@ -267,6 +267,8 @@ cv_matrix_bart <- function(cv_element_,
         } else {
                 NULL
         }
+
+        sigma_list <- lapply(bart_models, function(x){x$sigma})
 
         return(list(comparison_metrics = comparison_metrics,
                     correlation_metrics = correlation_metrics,
@@ -1062,7 +1064,11 @@ cv_matrix_skewBART <- function(cv_element_,
                                n_mcmc_,
                                n_burn_){
 
+<<<<<<< HEAD
         library(skewBART)
+=======
+        # library(skewBART)
+>>>>>>> 660bc3ea125f3842fe6b270208a809d86791253b
 
         # Getting the data elements
         x_train <- cv_element_$train$x
