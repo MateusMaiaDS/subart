@@ -1064,11 +1064,7 @@ cv_matrix_skewBART <- function(cv_element_,
                                n_mcmc_,
                                n_burn_){
 
-<<<<<<< HEAD
         library(skewBART)
-=======
-        # library(skewBART)
->>>>>>> 660bc3ea125f3842fe6b270208a809d86791253b
 
         # Getting the data elements
         x_train <- cv_element_$train$x
@@ -1240,14 +1236,14 @@ cv_matrix_skewBART <- function(cv_element_,
                                                                              value = cr_coverage(f_true = sigma_,
                                                                                                  f_post = matrix(sigma_post,ncol = length(sigma_post)),
                                                                                                  prob = 0.5),
-                                                                             model = "bayesSUR",
+                                                                             model = "mvBART",
                                                                              mvn_dim = mvn_dim_,
                                                                              param_index = paste0("sigma",jj_,jj_,collapse = ""),
                                                                              fold = i))
 
                 correlation_metrics <- rbind(correlation_metrics, data.frame(metric = 'rmse',
                                                                              value = rmse(x = mean(sigma_post),y = sigma_),
-                                                                             model = 'bayesSUR',
+                                                                             model = 'mvBART',
                                                                              mvn_dim = mvn_dim_,
                                                                              param_index = paste0("sigma",jj_,jj_,collapse = ""),
                                                                              fold = i))
