@@ -433,7 +433,11 @@ subart <- function(x_train,
      y_train_for <- matrix(0,nrow = nrow(y_mat),ncol = ncol(y_mat))
      y_test_for <- matrix(0,nrow = nrow(x_test),ncol = ncol(y_mat))
 
-     Sigma_scale <- diag((max_y-min_y))
+     Sigma_scale <- if(ncol(y_mat)!=1){
+          diag((max_y-min_y))
+     } else {
+          matrix((max_y-min_y),ncol=1,nrow=1)
+     }
 
      # Reg_model_bool
      if(scale_y){
