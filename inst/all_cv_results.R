@@ -6,19 +6,21 @@ library(doParallel)
 devtools::load_all()
 seed_ <- 43
 set.seed(seed_) # ORIGINal is 42
-n_ <- 250
+n_ <- 1000
 p_ <- 10
 n_tree_ <- 100
 n_mcmc_ <- 5000
 n_burn_ <- 1000
 mvn_dim_ <- 2
-task_ <- "classification" # For this it can be either 'classification' or 'regression'
+task_ <- "regression" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
-model <- "bayesSUR"
+model <- "mvBART"
 
-if(!model %in% c("bayesSUR","subart","bart","mvBART"))
+if(!model %in% c("bayesSUR","subart","bart","mvBART")){
+        stop("Not a valid model!")
+}
 # Printing whcih model is being generated
-cat("Model:", model,"n_", n_, "p_" , p_, "tree", n_tree_, "mvn_dim", mvn_dim_, "task", task_, "sim " , sim_)
+print(cat("Model:", model,"n_", n_, "p_" , p_, "tree", n_tree_, "mvn_dim", mvn_dim_, "task", task_, "sim " , sim_))
 
 # It was run to test at first
 n_rep <- 100
@@ -57,7 +59,7 @@ if(model == "bayesSUR" & task_ == "classification"){
 }
 
 # Selecting a path to save the model
-path <- "/Users/mateusmaia/Documents/saving_models_test/"
+path <- "/users/research/mmarques/r1_rebuttal_results/"
 
 #Small test to verify the specified path
 if(!(file.exists(path) && file.info(path)$isdir)){
@@ -65,11 +67,11 @@ if(!(file.exists(path) && file.info(path)$isdir)){
 }
 
 
-result <- foreach(i = 1:n_rep,.packages = c("dbarts","surbayes","dplyr","subart","skewBART")) %dopar%{
+result <- foreach(i = 1:n_rep,.packages = c("dbarts","skewBART","surbayes","dplyr","subart")) %dopar%{
 
-     source("inst/all_cv_functions.R")
+     source("/users/research/mmarques/subart/inst/all_cv_functions.R")
 
-     devtools::load_all()
+     devtools::load_all("/users/research/mmarques/subart/")
 
      if(model == 'bart'){
              aux <- cv_matrix_bart(cv_element_ = cv_[[i]],
@@ -92,7 +94,7 @@ result <- foreach(i = 1:n_rep,.packages = c("dbarts","surbayes","dplyr","subart"
                                           n_mcmc_ = n_mcmc_,
                                           n_burn_ = n_burn_)
      } else if (model == 'bayesSUR' & task_ == 'regression'){
-             aux_ <- cv_matrix_bayesSUR(cv_element_ = cv_[[i]],
+             aux <- cv_matrix_bayesSUR(cv_element_ = cv_[[i]],
                                                 n_tree_ = n_tree_,
                                                 mvn_dim_ = mvn_dim_,
                                                 n_ = n_,
