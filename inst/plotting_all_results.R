@@ -2,13 +2,13 @@
 library(tidyverse)
 rm(list=ls())
 set.seed(42)
-n_ <- 500
+n_ <- 1000
 p_ <- 10
 n_tree_ <- 100
-mvn_dim_ <- 3
+mvn_dim_ <- 2
 seed_ <- 43
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
-sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
+sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
 
 # Setting the path where all results are
 models <- if (task_ == "classification") {
@@ -22,8 +22,8 @@ models <- if (task_ == "classification") {
 }
 
 # Getting the directory path where all results are stored (Change depending where you running this)
-results_path <- paste0("/users/research/mmarques/r1_rebuttal_results/")
-save_plots_path <- paste0("/users/research/mmarques/r1_rebuttal_plots/")
+results_path <- paste0("/Users/mm538r/OneDrive - University of Glasgow/r1_rebuttal_results/")
+save_plots_path <- paste0("/Users/mm538r/OneDrive - University of Glasgow/r1_rebuttal_plots/")
 
 
 # Generating the result df that will be stored
@@ -172,12 +172,15 @@ summary_df_corr_cov <-result_df_corr %>% filter(metric == "cr_cov") %>%  group_b
      mutate(metric = "PI coverage")
 
 summary_df_corr_rmse <- result_df_corr %>% filter(metric == "rmse") %>%  group_by(param_index,model) %>%
-     summarise(mean_cv = sqrt(mean(value^2))) %>% pivot_wider(names_from = model, values_from = mean_cv) %>%
+     summarise(mean_cv = mean(value)) %>% pivot_wider(names_from = model, values_from = mean_cv) %>%
      mutate(metric = "RMSE")
 
+summary_sd_df_corr_rmse <- result_df_corr %>% filter(metric == "rmse") %>%  group_by(param_index,model) %>%
+     summarise(mean_cv = sd(value)) %>% pivot_wider(names_from = model, values_from = mean_cv) %>%
+     mutate(metric = "sd_RMSE")
+
 summary_corr_comparison <- rbind(summary_df_corr_cov,
-                                 summary_df_corr_rmse) %>%
-     dplyr::filter(stringr::str_detect(param_index,"sigma"))
-
+                                 summary_df_corr_rmse,
+                                 summary_sd_df_corr_rmse)
 summary_corr_comparison
-
+summarydf
