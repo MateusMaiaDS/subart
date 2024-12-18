@@ -127,6 +127,7 @@ struct Node {
 
      void nodeLogLike(modelParam &data);
      void updateResiduals(modelParam& data, arma::vec &curr_res, arma::vec &curr_u);
+     void updateResiduals_uni(modelParam& data, arma::vec &curr_res);
      void displayCurrNode();
 
      Node(modelParam &data);

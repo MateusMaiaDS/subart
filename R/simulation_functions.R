@@ -19,18 +19,24 @@ sim_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
           rho12 <- 0.8
           rho13 <- 0.5
           rho23 <- 0.25
-          Sigma <- diag(c(sigma1^2,sigma2^2,sigma3^2),nrow = mvn_dim)
-          Sigma[1,2] <- Sigma[2,1] <- rho12*sigma1*sigma2
-          Sigma[1,3] <- Sigma[3,1] <- rho13*sigma1*sigma3
-          Sigma[2,3] <- Sigma[3,2] <- rho23*sigma2*sigma3
+
+          if(is.null(Sigma)){
+               Sigma <- diag(c(sigma1^2,sigma2^2,sigma3^2),nrow = mvn_dim)
+               Sigma[1,2] <- Sigma[2,1] <- rho12*sigma1*sigma2
+               Sigma[1,3] <- Sigma[3,1] <- rho13*sigma1*sigma3
+               Sigma[2,3] <- Sigma[3,2] <- rho23*sigma2*sigma3
+          }
+
           determinant(Sigma)$modulus[1]
           eigen(Sigma)$values
      } else {
           sigma1 <- 1
           sigma2 <- 10
           rho12 <- 0.75 # Original is 0.75
-          Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
-          Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
+          if(is.null(Sigma)){
+               Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
+               Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
+          }
           determinant(Sigma)$modulus[1]
           eigen(Sigma)$values
 
@@ -98,18 +104,22 @@ sim_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
                rho12 <- 0.8
                rho13 <- 0.5
                rho23 <- 0.25
-               Sigma <- diag(c(sigma1^2,sigma2^2,sigma3^2),nrow = mvn_dim)
-               Sigma[1,2] <- Sigma[2,1] <- rho12*sigma1*sigma2
-               Sigma[1,3] <- Sigma[3,1] <- rho13*sigma1*sigma3
-               Sigma[2,3] <- Sigma[3,2] <- rho23*sigma2*sigma3
+               if(is.null(Sigma)){
+                    Sigma <- diag(c(sigma1^2,sigma2^2,sigma3^2),nrow = mvn_dim)
+                    Sigma[1,2] <- Sigma[2,1] <- rho12*sigma1*sigma2
+                    Sigma[1,3] <- Sigma[3,1] <- rho13*sigma1*sigma3
+                    Sigma[2,3] <- Sigma[3,2] <- rho23*sigma2*sigma3
+               }
                determinant(Sigma)$modulus[1]
                eigen(Sigma)$values
           } else {
                sigma1 <- 1
                sigma2 <- 125
                rho12 <- 0.75
-               Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
-               Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
+               if(is.null(Sigma)){
+                    Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
+                    Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
+               }
                determinant(Sigma)$modulus[1]
                eigen(Sigma)$values
 
@@ -192,10 +202,12 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
                 rho12 <- 0.8
                 rho13 <- 0.5
                 rho23 <- 0.25
-                Sigma <- diag(c(sigma1^2, sigma2^2, sigma3^2), nrow = mvn_dim)
-                Sigma[1, 2] <- Sigma[2, 1] <- rho12 * sigma1 * sigma2
-                Sigma[1, 3] <- Sigma[3, 1] <- rho13 * sigma1 * sigma3
-                Sigma[2, 3] <- Sigma[3, 2] <- rho23 * sigma2 * sigma3
+                if(is.null(Sigma)){
+                     Sigma <- diag(c(sigma1^2, sigma2^2, sigma3^2), nrow = mvn_dim)
+                     Sigma[1, 2] <- Sigma[2, 1] <- rho12 * sigma1 * sigma2
+                     Sigma[1, 3] <- Sigma[3, 1] <- rho13 * sigma1 * sigma3
+                     Sigma[2, 3] <- Sigma[3, 2] <- rho23 * sigma2 * sigma3
+                }
                 determinant(Sigma)$modulus[1]
                 eigen(Sigma)$values
         }
@@ -203,8 +215,10 @@ sim_class_mvn_friedman1 <- function(n, p, mvn_dim,Sigma = NULL){
                 sigma1 <- 1
                 sigma2 <- 1
                 rho12 <- 0.75
-                Sigma <- diag(c(sigma1^2, sigma2^2), nrow = mvn_dim)
-                Sigma[1, 2] <- Sigma[2, 1] <- sigma1 * sigma2 * rho12
+                if(is.null(Sigma)){
+                     Sigma <- diag(c(sigma1^2, sigma2^2), nrow = mvn_dim)
+                     Sigma[1, 2] <- Sigma[2, 1] <- sigma1 * sigma2 * rho12
+                }
                 determinant(Sigma)$modulus[1]
                 eigen(Sigma)$values
         }
@@ -272,18 +286,22 @@ sim_class_mvn_friedman2 <- function(n, p, mvn_dim,Sigma = NULL){
                rho12 <- 0.8
                rho13 <- 0.5
                rho23 <- 0.25
-               Sigma <- diag(c(sigma1^2,sigma2^2,sigma3^2),nrow = mvn_dim)
-               Sigma[1,2] <- Sigma[2,1] <- rho12*sigma1*sigma2
-               Sigma[1,3] <- Sigma[3,1] <- rho13*sigma1*sigma3
-               Sigma[2,3] <- Sigma[3,2] <- rho23*sigma2*sigma3
+               if(is.null(Sigma)){
+                    Sigma <- diag(c(sigma1^2,sigma2^2,sigma3^2),nrow = mvn_dim)
+                    Sigma[1,2] <- Sigma[2,1] <- rho12*sigma1*sigma2
+                    Sigma[1,3] <- Sigma[3,1] <- rho13*sigma1*sigma3
+                    Sigma[2,3] <- Sigma[3,2] <- rho23*sigma2*sigma3
+               }
                determinant(Sigma)$modulus[1]
                eigen(Sigma)$values
           } else {
                sigma1 <- 1
                sigma2 <- 1
                rho12 <- 0.75
-               Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
-               Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
+               if(is.null(Sigma)){
+                    Sigma <- diag(c(sigma1^2,sigma2^2),nrow = mvn_dim)
+                    Sigma[1,2] <- Sigma[2,1] <-sigma1*sigma2*rho12
+               }
                determinant(Sigma)$modulus[1]
                eigen(Sigma)$values
 
