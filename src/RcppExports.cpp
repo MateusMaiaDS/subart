@@ -72,9 +72,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// replaceWithUniqueRankMatrix
+arma::mat replaceWithUniqueRankMatrix(arma::vec categories, arma::vec values);
+RcppExport SEXP _subart_replaceWithUniqueRankMatrix(SEXP categoriesSEXP, SEXP valuesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type categories(categoriesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type values(valuesSEXP);
+    rcpp_result_gen = Rcpp::wrap(replaceWithUniqueRankMatrix(categories, values));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cppbart
-Rcpp::List cppbart(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double alpha, double beta, double nu, arma::mat S_0_wish, arma::vec A_j_vec, bool update_Sigma, bool var_selection_bool, bool sv_bool, bool hier_prior_bool, arma::mat sv_matrix);
-RcppExport SEXP _subart_cppbart(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP hier_prior_boolSEXP, SEXP sv_matrixSEXP) {
+Rcpp::List cppbart(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double alpha, double beta, double nu, arma::mat S_0_wish, arma::vec A_j_vec, bool update_Sigma, bool var_selection_bool, bool sv_bool, bool hier_prior_bool, arma::mat sv_matrix, arma::vec categorical_indicators);
+RcppExport SEXP _subart_cppbart(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP hier_prior_boolSEXP, SEXP sv_matrixSEXP, SEXP categorical_indicatorsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -99,13 +111,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type sv_bool(sv_boolSEXP);
     Rcpp::traits::input_parameter< bool >::type hier_prior_bool(hier_prior_boolSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sv_matrix(sv_matrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(cppbart(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix));
+    Rcpp::traits::input_parameter< arma::vec >::type categorical_indicators(categorical_indicatorsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cppbart(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators));
     return rcpp_result_gen;
 END_RCPP
 }
 // cppbart_missing
-Rcpp::List cppbart_missing(arma::mat x_train, arma::mat y_mat, arma::vec n_missing, arma::mat na_indicators, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double alpha, double beta, double nu, arma::mat S_0_wish, arma::vec A_j_vec, bool update_Sigma, bool var_selection_bool, bool sv_bool, bool hier_prior_bool, arma::mat sv_matrix);
-RcppExport SEXP _subart_cppbart_missing(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP n_missingSEXP, SEXP na_indicatorsSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP hier_prior_boolSEXP, SEXP sv_matrixSEXP) {
+Rcpp::List cppbart_missing(arma::mat x_train, arma::mat y_mat, arma::vec n_missing, arma::mat na_indicators, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double alpha, double beta, double nu, arma::mat S_0_wish, arma::vec A_j_vec, bool update_Sigma, bool var_selection_bool, bool sv_bool, bool hier_prior_bool, arma::mat sv_matrix, arma::vec categorical_indicators);
+RcppExport SEXP _subart_cppbart_missing(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP n_missingSEXP, SEXP na_indicatorsSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP nuSEXP, SEXP S_0_wishSEXP, SEXP A_j_vecSEXP, SEXP update_SigmaSEXP, SEXP var_selection_boolSEXP, SEXP sv_boolSEXP, SEXP hier_prior_boolSEXP, SEXP sv_matrixSEXP, SEXP categorical_indicatorsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -132,7 +145,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type sv_bool(sv_boolSEXP);
     Rcpp::traits::input_parameter< bool >::type hier_prior_bool(hier_prior_boolSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sv_matrix(sv_matrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(cppbart_missing(x_train, y_mat, n_missing, na_indicators, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix));
+    Rcpp::traits::input_parameter< arma::vec >::type categorical_indicators(categorical_indicatorsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cppbart_missing(x_train, y_mat, n_missing, na_indicators, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -150,8 +164,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cppbart_CLASS
-Rcpp::List cppbart_CLASS(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double nu, double alpha, double beta, unsigned int m, bool update_sigma, bool var_selection_bool, bool tn_sampler, bool sv_bool, arma::mat sv_matrix);
-RcppExport SEXP _subart_cppbart_CLASS(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP nuSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP mSEXP, SEXP update_sigmaSEXP, SEXP var_selection_boolSEXP, SEXP tn_samplerSEXP, SEXP sv_boolSEXP, SEXP sv_matrixSEXP) {
+Rcpp::List cppbart_CLASS(arma::mat x_train, arma::mat y_mat, arma::mat x_test, arma::mat x_cut, int n_tree, int node_min_size, int n_mcmc, int n_burn, arma::mat Sigma_init, arma::vec mu_init, arma::vec sigma_mu, double nu, double alpha, double beta, unsigned int m, bool update_sigma, bool var_selection_bool, bool tn_sampler, bool sv_bool, arma::mat sv_matrix, arma::vec categorical_indicators);
+RcppExport SEXP _subart_cppbart_CLASS(SEXP x_trainSEXP, SEXP y_matSEXP, SEXP x_testSEXP, SEXP x_cutSEXP, SEXP n_treeSEXP, SEXP node_min_sizeSEXP, SEXP n_mcmcSEXP, SEXP n_burnSEXP, SEXP Sigma_initSEXP, SEXP mu_initSEXP, SEXP sigma_muSEXP, SEXP nuSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP mSEXP, SEXP update_sigmaSEXP, SEXP var_selection_boolSEXP, SEXP tn_samplerSEXP, SEXP sv_boolSEXP, SEXP sv_matrixSEXP, SEXP categorical_indicatorsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -175,7 +189,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type tn_sampler(tn_samplerSEXP);
     Rcpp::traits::input_parameter< bool >::type sv_bool(sv_boolSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type sv_matrix(sv_matrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(cppbart_CLASS(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix));
+    Rcpp::traits::input_parameter< arma::vec >::type categorical_indicators(categorical_indicatorsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cppbart_CLASS(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix, categorical_indicators));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -186,10 +201,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_subart_wishart_loglikelihood", (DL_FUNC) &_subart_wishart_loglikelihood, 3},
     {"_subart_iwishart_loglikelihood", (DL_FUNC) &_subart_iwishart_loglikelihood, 3},
     {"_subart_log_dmvn", (DL_FUNC) &_subart_log_dmvn, 2},
-    {"_subart_cppbart", (DL_FUNC) &_subart_cppbart, 21},
-    {"_subart_cppbart_missing", (DL_FUNC) &_subart_cppbart_missing, 23},
+    {"_subart_replaceWithUniqueRankMatrix", (DL_FUNC) &_subart_replaceWithUniqueRankMatrix, 2},
+    {"_subart_cppbart", (DL_FUNC) &_subart_cppbart, 22},
+    {"_subart_cppbart_missing", (DL_FUNC) &_subart_cppbart_missing, 24},
     {"_subart_truncated_sample", (DL_FUNC) &_subart_truncated_sample, 3},
-    {"_subart_cppbart_CLASS", (DL_FUNC) &_subart_cppbart_CLASS, 20},
+    {"_subart_cppbart_CLASS", (DL_FUNC) &_subart_cppbart_CLASS, 21},
     {NULL, NULL, 0}
 };
 

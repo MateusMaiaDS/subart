@@ -41,6 +41,10 @@ struct modelParam {
         arma::vec move_proposal;
         arma::vec move_acceptance;
 
+        // Creating new objects for new rules for categorical indicators
+        arma::vec categorical_indicators;
+        bool categorical_indicators_bool;
+
         // Elements to be used in the loglikelihood update and mu update
         double v_j;
         double sigma_mu_j;
@@ -62,7 +66,8 @@ struct modelParam {
                    double n_mcmc_,
                    double n_burn_,
                    bool sv_bool_,
-                   arma::mat sv_matrix_);
+                   arma::mat sv_matrix_,
+                   arma::vec categorical_indicators_);
 
 };
 
