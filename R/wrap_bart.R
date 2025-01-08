@@ -133,9 +133,10 @@ subart <- function(x_train,
      dummy_x <- base_dummyVars(x_train)
 
      # Create a data.frame aux
+     initial_rank <- FALSE
 
      # Create a list
-     if(length(dummy_x$facVars)!=0){
+     if(length(dummy_x$facVars)!=0 & initial_rank){
 
              # Selected rank_var categorical
              rank_var <- 1
@@ -153,7 +154,26 @@ subart <- function(x_train,
                      # Doing the same for the test set
                      x_test[[dummy_x$facVars[i]]] <- as.numeric(factor(x_test[[dummy_x$facVars[[i]]]], labels = c(formula_aux$y)))-1
 
+                     categorical_indicators <- numeric(ncol(x_train))
+
              }
+
+     } else if ((length(dummy_x$facVars)!=0) && isFALSE(initial_rank)) {
+
+          for(i in 1:length(dummy_x$facVars)){
+
+               x_train[[dummy_x$facVars[i]]] <- as.numeric(x_train[[dummy_x$facVars[i]]])
+               x_test[[dummy_x$facVars[i]]] <- as.numeric(x_test[[dummy_x$facVars[i]]])
+
+               categorical_indicators <- numeric(ncol(x_train))
+               categorical_indicators[which(colnames(x_train) %in% dummy_x$facVars)] <- 1
+
+          }
+
+     } else {
+
+          categorical_indicators <- numeric(ncol(x_train))
+
      }
 
      # Getting the train and test set
@@ -370,7 +390,8 @@ subart <- function(x_train,
                                             varimportance,
                                             sv_bool,
                                             hier_prior_bool,
-                                            sv_matrix)
+                                            sv_matrix,
+                                            categorical_indicators)
                 }
 
      }
