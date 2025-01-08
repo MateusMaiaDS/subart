@@ -338,7 +338,8 @@ subart <- function(x_train,
                                     varimportance,
                                     tn_sampler,
                                     sv_bool,
-                                    sv_matrix)
+                                    sv_matrix,
+                                    categorical_indicators)
 
      } else {
                 if(any(is.na(y_mat_scale))){
@@ -368,7 +369,8 @@ subart <- function(x_train,
                                                    varimportance,
                                                    sv_bool,
                                                    hier_prior_bool,
-                                                   sv_matrix)
+                                                   sv_matrix,
+                                                   categorical_indicators)
 
                 } else {
                         na_boolean <- FALSE
