@@ -98,10 +98,8 @@ subart <- function(x_train,
                      sv_matrix[i,specify_variables[[i]]] <- 1
              }
      }
-     # Verifying if it's been using a y_mat matrix
-     if(NCOL(y_mat)<2){
-         stop("Insert a valid multivariate response. ")
-     }
+
+
 
      # Changing to a classification model
      if(length(unique(c(y_mat[complete.cases(y_mat)])))==2){
@@ -122,6 +120,11 @@ subart <- function(x_train,
      if(class_model & scale_y){
              stop("Classificaton model should not scale y.")
      }
+
+     # # Verifying if it's been using a y_mat matrix
+     # if(NCOL(y_mat)<2 & class_model){
+     #      stop("Insert a valid multivariate response for a classification task. ")
+     # }
 
      # Verifying if x_train and x_test are matrices
      if(!is.data.frame(x_train) || !is.data.frame(x_test)){
@@ -229,7 +232,7 @@ subart <- function(x_train,
 
      if(class_model){
              # Call the bart function
-             if(is.null(Sigma_init)){
+             if(is.null(Sigma_init) || NCOL(y_mat)==1){
                      Sigma_init <- diag(1,nrow = NCOL(y_mat))
              }
              mu_init <- apply(y_mat,2,mean,na.rm = TRUE)
@@ -266,7 +269,13 @@ subart <- function(x_train,
                      lambda <- (nsigma*nsigma*qchi)/df
                      rate_tau <- (lambda*df)/2
 
-                     S_0_wish <- 2*df*diag(c(rate_tau))
+                     S_0_wish <- if(ncol(y_mat)!=1){
+                          2*df*diag(c(rate_tau))
+                     } else {
+                          matrix(2*df*c(rate_tau),ncol = 1,nrow = 1)
+                     }
+
+
 
              } else {
                      A_j <- numeric()
@@ -277,13 +286,21 @@ subart <- function(x_train,
                                                         method = "Brent",lower = 0.00001,upper = 100)$par
                      }
 
-                     S_0_wish <- diag(A_j)
+                     S_0_wish <- if(ncol(y_mat)!=1){
+                          diag(A_j)
+                     } else {
+                          matrix(A_j,ncol = 1,nrow = 1)
+                     }
              }
 
 
              # Call the bart function
              if(is.null(Sigma_init)){
-                     Sigma_init <- diag(nsigma^2)
+                     Sigma_init <- if(ncol(y_mat)!=1){
+                          diag(nsigma^2)
+                     } else {
+                          matrix(nsigma^2,ncol = 1,nrow = 1)
+                     }
              }
 
              mu_init <- apply(y_mat_scale,2,mean,na.rm = TRUE)
@@ -294,84 +311,130 @@ subart <- function(x_train,
      # Generating the BART obj
      if(class_model){
 
-          if(any(is.na(y_mat_scale))){
-               y_mat_scale[is.na(y_mat_scale)] <- -1
-               na_boolean <- TRUE
-          } else {
+          if(ncol(y_mat_scale)==1 ){ # For the univariate case
                na_boolean <- FALSE
+               bart_obj <- cppbart_univariate_CLASS(x_train_scale,
+                                                    y_mat_scale,
+                                                    x_test_scale,
+                                                    xcut_m,
+                                                    n_tree,
+                                                    node_min_size,
+                                                    n_mcmc,
+                                                    n_burn,
+                                                    Sigma_init,
+                                                    mu_init,
+                                                    sigma_mu_j,
+                                                    nu,
+                                                    alpha,beta,
+                                                    m,update_Sigma,
+                                                    varimportance,
+                                                    tn_sampler,
+                                                    sv_bool,
+                                                    sv_matrix)
+          } else {
+
+               if(any(is.na(y_mat_scale))){
+                    y_mat_scale[is.na(y_mat_scale)] <- -1
+                    na_boolean <- TRUE
+               } else {
+                    na_boolean <- FALSE
+               }
+
+               bart_obj <- cppbart_CLASS(x_train_scale,
+                                         y_mat_scale,
+                                         x_test_scale,
+                                         xcut_m,
+                                         n_tree,
+                                         node_min_size,
+                                         n_mcmc,
+                                         n_burn,
+                                         Sigma_init,
+                                         mu_init,
+                                         sigma_mu_j,
+                                         nu,
+                                         alpha,beta,
+                                         m,update_Sigma,
+                                         varimportance,
+                                         tn_sampler,
+                                         sv_bool,
+                                         sv_matrix)
           }
 
-          bart_obj <- cppbart_CLASS(x_train_scale,
-                                    y_mat_scale,
-                                    x_test_scale,
-                                    xcut_m,
-                                    n_tree,
-                                    node_min_size,
-                                    n_mcmc,
-                                    n_burn,
-                                    Sigma_init,
-                                    mu_init,
-                                    sigma_mu_j,
-                                    nu,
-                                    alpha,beta,
-                                    m,update_Sigma,
-                                    varimportance,
-                                    tn_sampler,
-                                    sv_bool,
-                                    sv_matrix)
-
      } else {
-                if(any(is.na(y_mat_scale))){
-                        number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
-                        na_indicators <- ifelse(is.na(y_mat_scale),1,0)
-                        y_mat_scale[is.na(y_mat_scale)] <- 0
+          if(ncol(y_mat_scale)==1 ){ # For the univariate case
+                    na_boolean <- FALSE
+                    bart_obj <- cppbart_univariate(x_train_scale,
+                                        y_mat_scale,
+                                        x_test_scale,
+                                        xcut_m,
+                                        n_tree,
+                                        node_min_size,
+                                        n_mcmc,
+                                        n_burn,
+                                        Sigma_init,
+                                        mu_init,
+                                        sigma_mu_j,
+                                        alpha,beta,nu,
+                                        S_0_wish,
+                                        A_j,
+                                        update_Sigma,
+                                        varimportance,
+                                        sv_bool,
+                                        hier_prior_bool,
+                                        sv_matrix)
+          } else {
+                    if(any(is.na(y_mat_scale))){
+                             number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
+                             na_indicators <- ifelse(is.na(y_mat_scale),1,0)
+                             y_mat_scale[is.na(y_mat_scale)] <- 0
 
-                        na_boolean <- TRUE
+                             na_boolean <- TRUE
 
-                        bart_obj <- cppbart_missing(x_train_scale,
-                                                   y_mat_scale,
-                                                   number_na,
-                                                   na_indicators,
-                                                   x_test_scale,
-                                                   xcut_m,
-                                                   n_tree,
-                                                   node_min_size,
-                                                   n_mcmc,
-                                                   n_burn,
-                                                   Sigma_init,
-                                                   mu_init,
-                                                   sigma_mu_j,
-                                                   alpha,beta,nu,
-                                                   S_0_wish,
-                                                   A_j,
-                                                   update_Sigma,
-                                                   varimportance,
-                                                   sv_bool,
-                                                   hier_prior_bool,
-                                                   sv_matrix)
+                             bart_obj <- cppbart_missing(x_train_scale,
+                                                        y_mat_scale,
+                                                        number_na,
+                                                        na_indicators,
+                                                        x_test_scale,
+                                                        xcut_m,
+                                                        n_tree,
+                                                        node_min_size,
+                                                        n_mcmc,
+                                                        n_burn,
+                                                        Sigma_init,
+                                                        mu_init,
+                                                        sigma_mu_j,
+                                                        alpha,beta,nu,
+                                                        S_0_wish,
+                                                        A_j,
+                                                        update_Sigma,
+                                                        varimportance,
+                                                        sv_bool,
+                                                        hier_prior_bool,
+                                                        sv_matrix)
 
-                } else {
-                        na_boolean <- FALSE
-                        bart_obj <- cppbart(x_train_scale,
-                                            y_mat_scale,
-                                            x_test_scale,
-                                            xcut_m,
-                                            n_tree,
-                                            node_min_size,
-                                            n_mcmc,
-                                            n_burn,
-                                            Sigma_init,
-                                            mu_init,
-                                            sigma_mu_j,
-                                            alpha,beta,nu,
-                                            S_0_wish,
-                                            A_j,
-                                            update_Sigma,
-                                            varimportance,
-                                            sv_bool,
-                                            hier_prior_bool,
-                                            sv_matrix)
-                }
+                     } else {
+                             na_boolean <- FALSE
+                             bart_obj <- cppbart(x_train_scale,
+                                                 y_mat_scale,
+                                                 x_test_scale,
+                                                 xcut_m,
+                                                 n_tree,
+                                                 node_min_size,
+                                                 n_mcmc,
+                                                 n_burn,
+                                                 Sigma_init,
+                                                 mu_init,
+                                                 sigma_mu_j,
+                                                 alpha,beta,nu,
+                                                 S_0_wish,
+                                                 A_j,
+                                                 update_Sigma,
+                                                 varimportance,
+                                                 sv_bool,
+                                                 hier_prior_bool,
+                                                 sv_matrix)
+                     }
+               }
 
      }
 
@@ -393,7 +456,11 @@ subart <- function(x_train,
      y_train_for <- matrix(0,nrow = nrow(y_mat),ncol = ncol(y_mat))
      y_test_for <- matrix(0,nrow = nrow(x_test),ncol = ncol(y_mat))
 
-     Sigma_scale <- diag((max_y-min_y))
+     Sigma_scale <- if(ncol(y_mat)!=1){
+          diag((max_y-min_y))
+     } else {
+          matrix((max_y-min_y),ncol=1,nrow=1)
+     }
 
      # Reg_model_bool
      if(scale_y){
@@ -441,7 +508,7 @@ subart <- function(x_train,
              # Case if storing a variable selection or not
              if(varimportance){
                      var_importance <- array(NA,dim = c(n_mcmc,ncol(x_test_scale),ncol(y_mat)))
-                     var_importance_raw <- bart_obj[[8]][ii]
+                     var_importance_raw <- bart_obj[[8]]
                      for(ii in 1:n_mcmc){
                              for(jj in 1:ncol(y_mat)){
                                      var_importance[ii,,jj] <- apply(bart_obj[[8]][ii][[1]][,,jj],2,sum)
