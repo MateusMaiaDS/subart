@@ -8,12 +8,19 @@ set.seed(42)
 j <- 1
 n <- 250
 n_tree <- 100
+task <- "classification"
 
 # Generating the simulation friedman1
-sim_data <- sim_mvn_friedman1(n = n,p = 10,mvn_dim = 2)
-sim_data_test <- sim_mvn_friedman1(n = n,p = 10,mvn_dim = 2)
+if(task == "classification"){
+     sim_data <- sim_class_mvn_friedman1(n = n,p = 10,mvn_dim = 2)
+     sim_data_test <- sim_class_mvn_friedman1(n = n,p = 10,mvn_dim = 2)
+} else {
+     sim_data <- sim_mvn_friedman1(n = n,p = 10,mvn_dim = 2)
+     sim_data_test <- sim_mvn_friedman1(n = n,p = 10,mvn_dim = 2)
+}
+
 x_train <- sim_data$x
-y_train <- sim_data$y[,,drop=FALSE]
+y_train <- sim_data$y[,1,drop=FALSE]
 true_sigma <- sim_data$Sigma[j,j]
 x_test <- sim_data_test$x
 
@@ -22,7 +29,9 @@ subart_mod <- subart(x_train = x_train,
                      y_mat = y_train,
                      x_test = x_test,
                      n_tree = n_tree,hier_prior_bool = TRUE,
+                     n_mcmc = 500,
                      n_burn = 0)
+
 bart_mod <- dbarts::bart(x.train = x_train,y.train = y_train[,1],
                          x.test = x_test,ntree = n_tree,ndpost = 2000,nskip = 0)
 

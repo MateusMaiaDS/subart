@@ -121,10 +121,10 @@ subart <- function(x_train,
              stop("Classificaton model should not scale y.")
      }
 
-     # Verifying if it's been using a y_mat matrix
-     if(NCOL(y_mat)<2 & class_model){
-          stop("Insert a valid multivariate response for a classification task. ")
-     }
+     # # Verifying if it's been using a y_mat matrix
+     # if(NCOL(y_mat)<2 & class_model){
+     #      stop("Insert a valid multivariate response for a classification task. ")
+     # }
 
      # Verifying if x_train and x_test are matrices
      if(!is.data.frame(x_train) || !is.data.frame(x_test)){
@@ -232,7 +232,7 @@ subart <- function(x_train,
 
      if(class_model){
              # Call the bart function
-             if(is.null(Sigma_init)){
+             if(is.null(Sigma_init) || NCOL(y_mat)==1){
                      Sigma_init <- diag(1,nrow = NCOL(y_mat))
              }
              mu_init <- apply(y_mat,2,mean,na.rm = TRUE)
@@ -311,31 +311,54 @@ subart <- function(x_train,
      # Generating the BART obj
      if(class_model){
 
-          if(any(is.na(y_mat_scale))){
-               y_mat_scale[is.na(y_mat_scale)] <- -1
-               na_boolean <- TRUE
-          } else {
+          if(ncol(y_mat_scale)==1 ){ # For the univariate case
                na_boolean <- FALSE
-          }
+               bart_obj <- cppbart_univariate_CLASS(x_train_scale,
+                                                    y_mat_scale,
+                                                    x_test_scale,
+                                                    xcut_m,
+                                                    n_tree,
+                                                    node_min_size,
+                                                    n_mcmc,
+                                                    n_burn,
+                                                    Sigma_init,
+                                                    mu_init,
+                                                    sigma_mu_j,
+                                                    nu,
+                                                    alpha,beta,
+                                                    m,update_Sigma,
+                                                    varimportance,
+                                                    tn_sampler,
+                                                    sv_bool,
+                                                    sv_matrix)
+          } else {
 
-          bart_obj <- cppbart_CLASS(x_train_scale,
-                                    y_mat_scale,
-                                    x_test_scale,
-                                    xcut_m,
-                                    n_tree,
-                                    node_min_size,
-                                    n_mcmc,
-                                    n_burn,
-                                    Sigma_init,
-                                    mu_init,
-                                    sigma_mu_j,
-                                    nu,
-                                    alpha,beta,
-                                    m,update_Sigma,
-                                    varimportance,
-                                    tn_sampler,
-                                    sv_bool,
-                                    sv_matrix)
+               if(any(is.na(y_mat_scale))){
+                    y_mat_scale[is.na(y_mat_scale)] <- -1
+                    na_boolean <- TRUE
+               } else {
+                    na_boolean <- FALSE
+               }
+
+               bart_obj <- cppbart_CLASS(x_train_scale,
+                                         y_mat_scale,
+                                         x_test_scale,
+                                         xcut_m,
+                                         n_tree,
+                                         node_min_size,
+                                         n_mcmc,
+                                         n_burn,
+                                         Sigma_init,
+                                         mu_init,
+                                         sigma_mu_j,
+                                         nu,
+                                         alpha,beta,
+                                         m,update_Sigma,
+                                         varimportance,
+                                         tn_sampler,
+                                         sv_bool,
+                                         sv_matrix)
+          }
 
      } else {
           if(ncol(y_mat_scale)==1 ){ # For the univariate case
@@ -485,7 +508,7 @@ subart <- function(x_train,
              # Case if storing a variable selection or not
              if(varimportance){
                      var_importance <- array(NA,dim = c(n_mcmc,ncol(x_test_scale),ncol(y_mat)))
-                     var_importance_raw <- bart_obj[[8]][ii]
+                     var_importance_raw <- bart_obj[[8]]
                      for(ii in 1:n_mcmc){
                              for(jj in 1:ncol(y_mat)){
                                      var_importance[ii,,jj] <- apply(bart_obj[[8]][ii][[1]][,,jj],2,sum)

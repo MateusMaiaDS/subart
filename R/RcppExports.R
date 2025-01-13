@@ -41,3 +41,7 @@ cppbart_CLASS <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, 
     .Call('_subart_cppbart_CLASS', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix)
 }
 
+cppbart_univariate_CLASS <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix) {
+    .Call('_subart_cppbart_univariate_CLASS', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix)
+}
+
