@@ -110,7 +110,7 @@ subart <- function(x_train,
      }
 
      if(class_model){
-          if(!identical(sort(unique(c(y_mat))),c(0,1))){
+          if(!identical(sort(round(unique(c(y_mat)))),c(0,1))){
                stop(" Use the y as c(0,1) vector for the classification model.")
           }
      }
