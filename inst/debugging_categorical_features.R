@@ -90,7 +90,7 @@ specify_variables = NULL # Specify variables for each dimension (j) by name or i
 diagnostic = TRUE
 
 y_mat <- y_mat
-y_mat[,1,drop = FALSE] <- ifelse(y_mat[,1]<=mean(y_mat[,1]),1,0)
+y_mat[,1] <- ifelse(y_mat[,1]<=mean(y_mat[,1]),1,0)
 aux_mod <- subart(x_train = x_train,y_mat = y_mat[,1,drop=FALSE],x_test = x_test,n_tree = 100,n_mcmc = 2000,n_burn = 500)
 
 var_importance_cost <- aux_mod$var_importance[1001:5000,,1] %>% colMeans()
