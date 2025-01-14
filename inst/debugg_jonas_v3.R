@@ -171,11 +171,3 @@ ps_fit_new <- subart(x_train = select(X_train, !c("trt")),
 
 
 
-
-
-
-
-
-
-
-
