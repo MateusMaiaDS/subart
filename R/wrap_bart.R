@@ -441,7 +441,7 @@ subart <- function(x_train,
              # Case if storing a variable selection or not
              if(varimportance){
                      var_importance <- array(NA,dim = c(n_mcmc,ncol(x_test_scale),ncol(y_mat)))
-                     var_importance_raw <- bart_obj[[8]][ii]
+                     var_importance_raw <- bart_obj[[8]]
                      for(ii in 1:n_mcmc){
                              for(jj in 1:ncol(y_mat)){
                                      var_importance[ii,,jj] <- apply(bart_obj[[8]][ii][[1]][,,jj],2,sum)

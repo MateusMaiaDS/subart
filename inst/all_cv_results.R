@@ -3,18 +3,18 @@
 # Generating the model results
 rm(list=ls())
 library(doParallel)
-devtools::load_all()
+devtools::load_all("/users/research/mmarques/subart/")
 seed_ <- 43
 set.seed(seed_) # ORIGINal is 42
-n_ <- 500
+n_ <- 1000
 p_ <- 10
 n_tree_ <- 100
 n_mcmc_ <- 5000
 n_burn_ <- 1000
-mvn_dim_ <- 2
+mvn_dim_ <- 3
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
 sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
-model <- "mvBART"
+model <- "bart"
 
 if(!model %in% c("bayesSUR","subart","bart","mvBART")){
         stop("Not a valid model!")
@@ -71,7 +71,7 @@ result <- foreach(i = 1:n_rep,.packages = c("dbarts","skewBART","surbayes","dply
 
      source("/users/research/mmarques/subart/inst/all_cv_functions.R")
 
-     devtools::load_all("/users/research/mmarques/subart/")
+     # devtools::load_all("/users/research/mmarques/subart/")
 
      if(model == 'bart'){
              aux <- cv_matrix_bart(cv_element_ = cv_[[i]],

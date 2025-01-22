@@ -2,13 +2,13 @@
 library(tidyverse)
 rm(list=ls())
 set.seed(42)
-n_ <- 1000
+n_ <- 250
 p_ <- 10
 n_tree_ <- 100
-mvn_dim_ <- 2
+mvn_dim_ <- 3
 seed_ <- 43
 task_ <- "regression" # For this it can be either 'classification' or 'regression'
-sim_ <- "friedman2" # For this can be either 'friedman1' or 'friedman2'
+sim_ <- "friedman1" # For this can be either 'friedman1' or 'friedman2'
 
 # Setting the path where all results are
 models <- if (task_ == "classification") {
@@ -22,8 +22,8 @@ models <- if (task_ == "classification") {
 }
 
 # Getting the directory path where all results are stored (Change depending where you running this)
-results_path <- paste0("/Users/mm538r/OneDrive - University of Glasgow/r1_rebuttal_results/")
-save_plots_path <- paste0("/Users/mm538r/OneDrive - University of Glasgow/r1_rebuttal_plots/")
+results_path <- paste0("r1_rebuttal_results/")
+save_plots_path <- paste0("r1_rebuttal_plots/")
 
 
 # Generating the result df that will be stored
@@ -32,7 +32,12 @@ result_df_corr <- data.frame()
 
 #Last round of results
 for(model in models){
-     result <- readRDS(paste0(results_path,"seed_",seed_,"_",model,"_",sim_,"_",task_,"_n_",n_,"_p_",p_,"_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
+     result <- if(model %in% "bayesSUR"){
+           readRDS(paste0(results_path,"seed_",seed_,"_",model,"_",sim_,"_",task_,"_n_",n_,"_p_",p_,"_ntree_",100,"_mvndim_",mvn_dim_,".Rds"))
+     } else {
+          readRDS(paste0(results_path,"seed_",seed_,"_",model,"_",sim_,"_",task_,"_n_",n_,"_p_",p_,"_ntree_",n_tree_,"_mvndim_",mvn_dim_,".Rds"))
+
+     }
      result_df <- rbind(result_df, lapply(result,function(x){x$comparison_metrics}) %>% do.call(rbind,.) )
      result_df_corr <- rbind(result_df_corr, lapply(result,function(x){x$correlation_metrics}) %>% do.call(rbind,.))
 }
@@ -162,7 +167,7 @@ if(task_=="regression"){
      #        width = width_inches, height = height_inches,dpi = 300)
      #
      # # Export as PDF
-     ggsave(paste0(save_plots_path,sim_,"_",task_,"_",n_,"_",mvn_dim_,".pdf"), plot = main_plot,
+     ggsave(paste0(save_plots_path,sim_,"_",task_,"_",n_,"_",mvn_dim_,"_n_tree_",n_tree_,".pdf"), plot = main_plot,
             width = width_inches, height = height_inches)
 
 } else if (task_ == "classification") {
@@ -269,7 +274,7 @@ if(task_=="regression"){
         #        width = width_inches, height = height_inches,dpi = 300)
         #
         # # Export as PDF
-        ggsave(paste0(save_plots_path,sim_,"_",task_,"_",n_,"_",mvn_dim_,".pdf"), plot = main_plot,
+        ggsave(paste0(save_plots_path,sim_,"_",task_,"_",n_,"_",mvn_dim_,"_n_tree_",n_tree_,".pdf"), plot = main_plot,
                width = width_inches, height = height_inches)
 
 
@@ -294,4 +299,3 @@ summary_corr_comparison <- rbind(summary_df_corr_cov,
                                  summary_df_corr_rmse,
                                  summary_sd_df_corr_rmse)
 summary_corr_comparison
-summarydf

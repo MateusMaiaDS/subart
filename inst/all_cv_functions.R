@@ -239,7 +239,7 @@ cv_matrix_bart <- function(cv_element_,
 
 
                 # Doing for the main sigma parameters
-                if(task_=="regreesion"){
+                if(task_=="regression"){
                         sigma_ <- sqrt(Sigma_[i_,i_])
                         sigma_post <- bart_models[[i_]]$sigma
                         correlation_metrics <- rbind(correlation_metrics, data.frame(metric = "cr_cov",
