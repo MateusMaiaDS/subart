@@ -110,7 +110,7 @@ subart <- function(x_train,
      }
 
      if(class_model){
-          if(!identical(sort(unique(c(y_mat))),c(0,1))){
+          if(!identical(sort(round(unique(c(y_mat)))),c(0,1))){
                stop(" Use the y as c(0,1) vector for the classification model.")
           }
      }
@@ -137,26 +137,48 @@ subart <- function(x_train,
 
      # Create a data.frame aux
 
+     # Create a data.frame aux
+     initial_rank <- FALSE
+
      # Create a list
-     if(length(dummy_x$facVars)!=0){
+     if(length(dummy_x$facVars)!=0 & initial_rank){
 
-             # Selected rank_var categorical
-             rank_var <- 1
+          # Selected rank_var categorical
+          rank_var <- 1
 
-             for(i in 1:length(dummy_x$facVars)){
-                     # See if the levels of the test and train matches
-                     if(!all(levels(x_train[[dummy_x$facVars[i]]])==levels(x_test[[dummy_x$facVars[i]]]))){
-                        levels(x_test[[dummy_x$facVars[[i]]]]) <- levels(x_train[[dummy_x$facVars[[i]]]])
-                     }
-                     df_aux <- data.frame( x = x_train[,dummy_x$facVars[i]], y = y_mat[,rank_var])
-                     formula_aux <- stats::aggregate(y~x,df_aux,mean)
-                     formula_aux$y <- rank(formula_aux$y)
-                     x_train[[dummy_x$facVars[i]]] <- as.numeric(factor(x_train[[dummy_x$facVars[[i]]]], labels = c(formula_aux$y)))-1
+          for(i in 1:length(dummy_x$facVars)){
+               # See if the levels of the test and train matches
+               if(!all(levels(x_train[[dummy_x$facVars[i]]])==levels(x_test[[dummy_x$facVars[i]]]))){
+                    levels(x_test[[dummy_x$facVars[[i]]]]) <- levels(x_train[[dummy_x$facVars[[i]]]])
+               }
+               df_aux <- data.frame( x = x_train[,dummy_x$facVars[i]], y = y_mat[,rank_var])
+               formula_aux <- stats::aggregate(y~x,df_aux,mean)
+               formula_aux$y <- rank(formula_aux$y)
+               x_train[[dummy_x$facVars[i]]] <- as.numeric(factor(x_train[[dummy_x$facVars[[i]]]], labels = c(formula_aux$y)))-1
 
-                     # Doing the same for the test set
-                     x_test[[dummy_x$facVars[i]]] <- as.numeric(factor(x_test[[dummy_x$facVars[[i]]]], labels = c(formula_aux$y)))-1
+               # Doing the same for the test set
+               x_test[[dummy_x$facVars[i]]] <- as.numeric(factor(x_test[[dummy_x$facVars[[i]]]], labels = c(formula_aux$y)))-1
 
-             }
+               categorical_indicators <- numeric(ncol(x_train))
+
+          }
+
+     } else if ((length(dummy_x$facVars)!=0) && isFALSE(initial_rank)) {
+
+          for(i in 1:length(dummy_x$facVars)){
+
+               x_train[[dummy_x$facVars[i]]] <- as.numeric(x_train[[dummy_x$facVars[i]]])
+               x_test[[dummy_x$facVars[i]]] <- as.numeric(x_test[[dummy_x$facVars[i]]])
+
+               categorical_indicators <- numeric(ncol(x_train))
+               categorical_indicators[which(colnames(x_train) %in% dummy_x$facVars)] <- 1
+
+          }
+
+     } else {
+
+          categorical_indicators <- numeric(ncol(x_train))
+
      }
 
      # Getting the train and test set
@@ -330,7 +352,8 @@ subart <- function(x_train,
                                                     varimportance,
                                                     tn_sampler,
                                                     sv_bool,
-                                                    sv_matrix)
+                                                    sv_matrix,
+                                                    categorical_indicators)
           } else {
 
                if(any(is.na(y_mat_scale))){
@@ -357,7 +380,8 @@ subart <- function(x_train,
                                          varimportance,
                                          tn_sampler,
                                          sv_bool,
-                                         sv_matrix)
+                                         sv_matrix,
+                                         categorical_indicators)
           }
 
      } else {
@@ -381,7 +405,8 @@ subart <- function(x_train,
                                         varimportance,
                                         sv_bool,
                                         hier_prior_bool,
-                                        sv_matrix)
+                                        sv_matrix,
+                                        categorical_indicators)
           } else {
                     if(any(is.na(y_mat_scale))){
                              number_na <- apply(y_mat_scale,2,function(x){sum(is.na(x),na.rm = TRUE)})
@@ -410,7 +435,8 @@ subart <- function(x_train,
                                                         varimportance,
                                                         sv_bool,
                                                         hier_prior_bool,
-                                                        sv_matrix)
+                                                        sv_matrix,
+                                                        categorical_indicators)
 
                      } else {
                              na_boolean <- FALSE
@@ -432,7 +458,8 @@ subart <- function(x_train,
                                                  varimportance,
                                                  sv_bool,
                                                  hier_prior_bool,
-                                                 sv_matrix)
+                                                 sv_matrix,
+                                                 categorical_indicators)
                      }
                }
 

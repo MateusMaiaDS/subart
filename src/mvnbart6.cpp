@@ -215,7 +215,8 @@ modelParam::modelParam(arma::mat x_train_,
                         double n_mcmc_,
                         double n_burn_,
                         bool sv_bool_,
-                        arma:: mat sv_matrix_){
+                        arma:: mat sv_matrix_,
+                        arma::vec categorical_indicators_){
 
 
         // Assign the variables
@@ -246,6 +247,9 @@ modelParam::modelParam(arma::mat x_train_,
         // Grow acceptation ratio
         move_proposal = arma::vec(3,arma::fill::zeros);
         move_acceptance = arma::vec(3,arma::fill::zeros);
+
+        categorical_indicators = categorical_indicators_;
+        categorical_indicators_bool = sum(categorical_indicators_)==0 ? false: true;
 
 }
 
@@ -489,6 +493,67 @@ Node* sample_node(std::vector<Node*> leaves_){
 
 }
 
+// [[Rcpp::export]]
+arma::mat replaceWithUniqueRankMatrix(arma::vec categories, arma::vec values) {
+     // Step 1: Group values by categories
+     std::map<double, std::vector<double>> valueGroups;
+     for (size_t i = 0; i < categories.n_elem; ++i) {
+          valueGroups[categories[i]].push_back(values[i]);
+     }
+
+     // Step 2: Compute the mean for each group (based on `values`)
+     std::vector<std::pair<double, double>> means; // Pair: (category, mean)
+     for (const auto& [category, group_values] : valueGroups) {
+          double sum = std::accumulate(group_values.begin(), group_values.end(), 0.0);
+          double mean = sum / group_values.size();
+          means.emplace_back(category, mean);
+     }
+
+     // Step 3: Rank categories based on strictly increasing means
+     std::sort(means.begin(), means.end(),
+               [](const std::pair<double, double>& a, const std::pair<double, double>& b) {
+                    return a.second < b.second; // Sort by mean
+               });
+
+     // Assign strict ranks (1-based)
+     std::map<double, int> ranks;
+     int rank = 1;
+     for (const auto& [category, mean] : means) {
+          ranks[category] = rank++;
+     }
+
+     // Step 4: Create a matrix for unique values and ranks
+     arma::mat result(ranks.size(), 2); // Rows = unique categories, Columns = 2
+     int row = 0;
+     for (const auto& [category, rank] : ranks) {
+          result(row, 0) = category; // Unique category
+          result(row, 1) = rank;     // Corresponding rank
+          row++;
+     }
+
+     return result;
+}
+
+arma::vec replaceWithMatrixMapping(arma::vec inputVector, arma::mat mappingMatrix) {
+     arma::vec outputVector = inputVector; // Copy input vector to modify
+
+     // Iterate through the input vector
+     for (size_t i = 0; i < inputVector.n_elem; ++i) {
+          double originalValue = inputVector[i];
+          // Find the corresponding value in the mappingMatrix
+          for (size_t j = 0; j < mappingMatrix.n_rows; ++j) {
+               if (mappingMatrix(j, 0) == originalValue) {
+                    // Replace the value with the new mapped value
+                    outputVector[i] = mappingMatrix(j, 1);
+                    break;
+               }
+          }
+     }
+
+     return outputVector;
+}
+
+
 // Grow a tree for a given rule
 void grow(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec& curr_u, int y_j_){
 
@@ -540,52 +605,72 @@ void grow(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec& curr_u, 
         }
 
         Rcpp::NumericVector valid_cutpoint;
+        arma::mat recoded_ranks;
 
         while(!no_valid_node){
-                g_node->var_split = split_candidates(p_try);
+             g_node->var_split = split_candidates(p_try);
 
-                Rcpp::NumericVector var_split_range;
+             Rcpp::NumericVector var_split_range;
 
-                // Getting the maximum and the minimum;
-                for(int i = 0; i < g_node->n_leaf; i++){
-                        var_split_range.push_back(data.x_train(g_node->train_index[i],g_node->var_split));
-                }
 
-                // Getting the minimum and the maximum;
-                double max_rule = max(var_split_range);
-                double min_rule = min(var_split_range);
+             if(data.categorical_indicators(g_node->var_split)==0) {
+                  // Getting the maximum and the minimum;
+                  for(int i = 0; i < g_node->n_leaf; i++){
+                       var_split_range.push_back(data.x_train(g_node->train_index[i],g_node->var_split));
+                  }
 
-                for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
-                        if((data.xcut(cut,g_node->var_split)>min_rule) & (data.xcut(cut,g_node->var_split)<max_rule)){
-                                valid_cutpoint.push_back(data.xcut(cut,g_node->var_split));
-                        }
-                }
+                  // Getting the minimum and the maximum;
+                  double max_rule = max(var_split_range);
+                  double min_rule = min(var_split_range);
 
-                if(valid_cutpoint.size()==0){
-                        p_try++;
-                        if(data.sv_bool){
-                                if(p_try>=sum_vars){
-                                        no_valid_node = true;
-                                }
-                        } else {
-                                if(p_try>=data.x_train.n_cols){
-                                        no_valid_node = true;
-                                };
-                        }
+                  for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
+                       if((data.xcut(cut,g_node->var_split)>min_rule) & (data.xcut(cut,g_node->var_split)<max_rule)){
+                            valid_cutpoint.push_back(data.xcut(cut,g_node->var_split));
+                       }
+                  }
 
-                } else {
-                        break; // Go out from the while
-                }
+             } else {
+
+                  // Getting the maximum and the minimum;
+                  for(int i = 0; i < g_node->n_leaf; i++){
+                       var_split_range.push_back(data.x_train(g_node->train_index[i],g_node->var_split));
+                  }
+
+                  arma::vec var_split_range_arma = Rcpp::as<arma::vec>(var_split_range); // Conversion
+                  arma::uvec conv_train_index = arma::conv_to<arma::uvec>::from(g_node->train_index);
+
+                  arma::vec leaf_residuals = curr_res.elem(conv_train_index);
+
+                  recoded_ranks = replaceWithUniqueRankMatrix(var_split_range_arma,leaf_residuals);
+                  valid_cutpoint = Rcpp::wrap(recoded_ranks.col(1));
+             }
+
+             if(valid_cutpoint.size()==0){
+                  p_try++;
+                  if(data.sv_bool){
+                       if(p_try>=sum_vars){
+                            no_valid_node = true;
+                       }
+                  } else {
+                       if(p_try>=data.x_train.n_cols){
+                            no_valid_node = true;
+                       };
+                  }
+
+             } else {
+                  break; // Go out from the while
+             }
         }
 
         if(no_valid_node){
-        // Returning to the old values
-                g_node->var_split = old_var_split;
-                g_node->var_split_rule = old_var_split_rule;
+             // Returning to the old values
+             g_node->var_split = old_var_split;
+             g_node->var_split_rule = old_var_split_rule;
 
-                g_node->deletingLeaves();
-                return;
+             g_node->deletingLeaves();
+             return;
         }
+
 
         // Selecting a rule (here I'm actually selecting the var split rule);
         g_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()))];
@@ -598,26 +683,30 @@ void grow(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec& curr_u, 
         int test_left_counter = 0;
         int test_right_counter = 0;
 
-        // Create a matrix to store the new x_{j} and then get information of min and max
-        arma::mat x_new_left(g_node->n_leaf, data.x_train.n_cols);
-        arma::mat x_new_right(g_node->n_leaf,data.x_train.n_cols);
+        arma::vec selected_predictor_train = data.x_train.col(g_node->var_split);
+        arma::vec selected_predictor_test = data.x_test.col(g_node->var_split);
+
+        if(data.categorical_indicators(g_node->var_split)!=0){
+
+             selected_predictor_train = replaceWithMatrixMapping(selected_predictor_train,recoded_ranks);
+             selected_predictor_test = replaceWithMatrixMapping(selected_predictor_test,recoded_ranks);
+
+        }
 
         // Updating the left and the right nodes
         for(int i = 0;i<data.x_train.n_rows;i++){
-                if(g_node -> train_index[i] == -1 ){
-                        g_node->left->n_leaf = train_left_counter;
-                        g_node->right->n_leaf = train_right_counter;
-                        break;
-                }
-                if(data.x_train(g_node->train_index[i],g_node->var_split)<=g_node->var_split_rule){
-                        g_node->left->train_index[train_left_counter] = g_node->train_index[i];
-                        x_new_left.row(train_left_counter) = data.x_train.row(g_node->train_index[i]);
-                        train_left_counter++;
-                } else {
-                        g_node->right->train_index[train_right_counter] = g_node->train_index[i];
-                        x_new_right.row(train_right_counter) = data.x_train.row(g_node->train_index[i]);
-                        train_right_counter++;
-                }
+             if(g_node -> train_index[i] == -1 ){
+                  g_node->left->n_leaf = train_left_counter;
+                  g_node->right->n_leaf = train_right_counter;
+                  break;
+             }
+             if(selected_predictor_train(g_node->train_index[i])<=g_node->var_split_rule){
+                  g_node->left->train_index[train_left_counter] = g_node->train_index[i];
+                  train_left_counter++;
+             } else {
+                  g_node->right->train_index[train_right_counter] = g_node->train_index[i];
+                  train_right_counter++;
+             }
 
         }
 
@@ -625,19 +714,20 @@ void grow(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec& curr_u, 
 
         // Updating the left and right nodes for the
         for(int i = 0;i<data.x_test.n_rows; i++){
-                if(g_node -> test_index[i] == -1){
-                        g_node->left->n_leaf_test = test_left_counter;
-                        g_node->right->n_leaf_test = test_right_counter;
-                        break;
-                }
-                if(data.x_test(g_node->test_index[i],g_node->var_split)<=g_node->var_split_rule){
-                        g_node->left->test_index[test_left_counter] = g_node->test_index[i];
-                        test_left_counter++;
-                } else {
-                        g_node->right->test_index[test_right_counter] = g_node->test_index[i];
-                        test_right_counter++;
-                }
+             if(g_node -> test_index[i] == -1){
+                  g_node->left->n_leaf_test = test_left_counter;
+                  g_node->right->n_leaf_test = test_right_counter;
+                  break;
+             }
+             if(selected_predictor_test(g_node->test_index[i])<=g_node->var_split_rule){
+                  g_node->left->test_index[test_left_counter] = g_node->test_index[i];
+                  test_left_counter++;
+             } else {
+                  g_node->right->test_index[test_right_counter] = g_node->test_index[i];
+                  test_right_counter++;
+             }
         }
+
 
         // If is a root node
         if(g_node->isRoot){
@@ -761,25 +851,44 @@ void grow_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
      }
 
      Rcpp::NumericVector valid_cutpoint;
+     arma::mat recoded_ranks;
 
      while(!no_valid_node){
           g_node->var_split = split_candidates(p_try);
 
           Rcpp::NumericVector var_split_range;
 
-          // Getting the maximum and the minimum;
-          for(int i = 0; i < g_node->n_leaf; i++){
-               var_split_range.push_back(data.x_train(g_node->train_index[i],g_node->var_split));
-          }
 
-          // Getting the minimum and the maximum;
-          double max_rule = max(var_split_range);
-          double min_rule = min(var_split_range);
-
-          for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
-               if((data.xcut(cut,g_node->var_split)>min_rule) & (data.xcut(cut,g_node->var_split)<max_rule)){
-                    valid_cutpoint.push_back(data.xcut(cut,g_node->var_split));
+          if(data.categorical_indicators(g_node->var_split)==0) {
+               // Getting the maximum and the minimum;
+               for(int i = 0; i < g_node->n_leaf; i++){
+                    var_split_range.push_back(data.x_train(g_node->train_index[i],g_node->var_split));
                }
+
+               // Getting the minimum and the maximum;
+               double max_rule = max(var_split_range);
+               double min_rule = min(var_split_range);
+
+               for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
+                    if((data.xcut(cut,g_node->var_split)>min_rule) & (data.xcut(cut,g_node->var_split)<max_rule)){
+                         valid_cutpoint.push_back(data.xcut(cut,g_node->var_split));
+                    }
+               }
+
+          } else {
+
+               // Getting the maximum and the minimum;
+               for(int i = 0; i < g_node->n_leaf; i++){
+                    var_split_range.push_back(data.x_train(g_node->train_index[i],g_node->var_split));
+               }
+
+               arma::vec var_split_range_arma = Rcpp::as<arma::vec>(var_split_range); // Conversion
+               arma::uvec conv_train_index = arma::conv_to<arma::uvec>::from(g_node->train_index);
+
+               arma::vec leaf_residuals = curr_res.elem(conv_train_index);
+
+               recoded_ranks = replaceWithUniqueRankMatrix(var_split_range_arma,leaf_residuals);
+               valid_cutpoint = Rcpp::wrap(recoded_ranks.col(1));
           }
 
           if(valid_cutpoint.size()==0){
@@ -819,9 +928,15 @@ void grow_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
      int test_left_counter = 0;
      int test_right_counter = 0;
 
-     // Create a matrix to store the new x_{j} and then get information of min and max
-     arma::mat x_new_left(g_node->n_leaf, data.x_train.n_cols);
-     arma::mat x_new_right(g_node->n_leaf,data.x_train.n_cols);
+     arma::vec selected_predictor_train = data.x_train.col(g_node->var_split);
+     arma::vec selected_predictor_test = data.x_test.col(g_node->var_split);
+
+     if(data.categorical_indicators(g_node->var_split)!=0){
+
+          selected_predictor_train = replaceWithMatrixMapping(selected_predictor_train,recoded_ranks);
+          selected_predictor_test = replaceWithMatrixMapping(selected_predictor_test,recoded_ranks);
+
+     }
 
      // Updating the left and the right nodes
      for(int i = 0;i<data.x_train.n_rows;i++){
@@ -830,18 +945,15 @@ void grow_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
                g_node->right->n_leaf = train_right_counter;
                break;
           }
-          if(data.x_train(g_node->train_index[i],g_node->var_split)<=g_node->var_split_rule){
+          if(selected_predictor_train(g_node->train_index[i])<=g_node->var_split_rule){
                g_node->left->train_index[train_left_counter] = g_node->train_index[i];
-               x_new_left.row(train_left_counter) = data.x_train.row(g_node->train_index[i]);
                train_left_counter++;
           } else {
                g_node->right->train_index[train_right_counter] = g_node->train_index[i];
-               x_new_right.row(train_right_counter) = data.x_train.row(g_node->train_index[i]);
                train_right_counter++;
           }
 
      }
-
 
 
      // Updating the left and right nodes for the
@@ -851,7 +963,7 @@ void grow_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
                g_node->right->n_leaf_test = test_right_counter;
                break;
           }
-          if(data.x_test(g_node->test_index[i],g_node->var_split)<=g_node->var_split_rule){
+          if(selected_predictor_test(g_node->test_index[i])<=g_node->var_split_rule){
                g_node->left->test_index[test_left_counter] = g_node->test_index[i];
                test_left_counter++;
           } else {
@@ -859,6 +971,7 @@ void grow_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
                test_right_counter++;
           }
      }
+
 
      // If is a root node
      if(g_node->isRoot){
@@ -1152,42 +1265,63 @@ void change(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec &curr_u
         // cout << " Split candidates: " << split_candidates << endl;
         // Trying to find a cutpoint
         Rcpp::NumericVector valid_cutpoint;
+        arma::mat recoded_ranks;
 
         while(!no_valid_node){
-                c_node->var_split = split_candidates(p_try);
+             c_node->var_split = split_candidates(p_try);
 
-                Rcpp::NumericVector var_split_range;
+             Rcpp::NumericVector var_split_range;
 
-                // Getting the maximum and the minimum;
-                for(int i = 0; i < c_node->n_leaf; i++){
-                        var_split_range.push_back(data.x_train(c_node->train_index[i],c_node->var_split));
-                }
 
-                // Getting the minimum and the maximum;
-                double max_rule = max(var_split_range);
-                double min_rule = min(var_split_range);
+             if(data.categorical_indicators(c_node->var_split)==0) {
+                  // Getting the maximum and the minimum;
+                  for(int i = 0; i < c_node->n_leaf; i++){
+                       var_split_range.push_back(data.x_train(c_node->train_index[i],c_node->var_split));
+                  }
 
-                for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
-                        if((data.xcut(cut,c_node->var_split)>min_rule) & (data.xcut(cut,c_node->var_split)<max_rule)){
-                                valid_cutpoint.push_back(data.xcut(cut,c_node->var_split));
-                        }
-                }
+                  // Getting the minimum and the maximum;
+                  double max_rule = max(var_split_range);
+                  double min_rule = min(var_split_range);
 
-                if(valid_cutpoint.size()==0){
-                        p_try++;
-                        if(data.sv_bool){
-                                if(p_try>=sum_vars){
-                                        no_valid_node = true;
-                                }
-                        } else {
-                                if(p_try>=data.x_train.n_cols){
-                                        no_valid_node = true;
-                                };
-                        }
-                } else {
-                        break; // Go out from the while
-                }
+                  for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
+                       if((data.xcut(cut,c_node->var_split)>min_rule) & (data.xcut(cut,c_node->var_split)<max_rule)){
+                            valid_cutpoint.push_back(data.xcut(cut,c_node->var_split));
+                       }
+                  }
+
+             } else {
+
+                  // Getting the maximum and the minimum;
+                  for(int i = 0; i < c_node->n_leaf; i++){
+                       var_split_range.push_back(data.x_train(c_node->train_index[i],c_node->var_split));
+                  }
+
+                  arma::vec var_split_range_arma = Rcpp::as<arma::vec>(var_split_range); // Conversion
+                  arma::uvec conv_train_index = arma::conv_to<arma::uvec>::from(c_node->train_index);
+
+                  arma::vec leaf_residuals = curr_res.elem(conv_train_index);
+
+                  recoded_ranks = replaceWithUniqueRankMatrix(var_split_range_arma,leaf_residuals);
+                  valid_cutpoint = Rcpp::wrap(recoded_ranks.col(1));
+             }
+
+             if(valid_cutpoint.size()==0){
+                  p_try++;
+                  if(data.sv_bool){
+                       if(p_try>=sum_vars){
+                            no_valid_node = true;
+                       }
+                  } else {
+                       if(p_try>=data.x_train.n_cols){
+                            no_valid_node = true;
+                       };
+                  }
+
+             } else {
+                  break; // Go out from the while
+             }
         }
+
 
         if(no_valid_node){
                 // Returning to the old values
@@ -1206,45 +1340,54 @@ void change(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec &curr_u
         int test_left_counter = 0;
         int test_right_counter = 0;
 
+        arma::vec selected_predictor_train = data.x_train.col(c_node->var_split);
+        arma::vec selected_predictor_test = data.x_test.col(c_node->var_split);
+
+        if(data.categorical_indicators(c_node->var_split)!=0){
+
+             selected_predictor_train = replaceWithMatrixMapping(selected_predictor_train,recoded_ranks);
+             selected_predictor_test = replaceWithMatrixMapping(selected_predictor_test,recoded_ranks);
+
+        }
 
         // Updating the left and the right nodes
         for(int i = 0;i<data.x_train.n_rows;i++){
-                // cout << " Train indexeses " << c_node -> train_index[i] << endl ;
-                if(c_node -> train_index[i] == -1){
-                        c_node->left->n_leaf = train_left_counter;
-                        c_node->right->n_leaf = train_right_counter;
-                        break;
-                }
-                // cout << " Current train index " << c_node->train_index[i] << endl;
+             // cout << " Train indexeses " << c_node -> train_index[i] << endl ;
+             if(c_node -> train_index[i] == -1){
+                  c_node->left->n_leaf = train_left_counter;
+                  c_node->right->n_leaf = train_right_counter;
+                  break;
+             }
+             // cout << " Current train index " << c_node->train_index[i] << endl;
 
-                if(data.x_train(c_node->train_index[i],c_node->var_split)<=c_node->var_split_rule){
-                        c_node->left->train_index[train_left_counter] = c_node->train_index[i];
-                        train_left_counter++;
-                } else {
-                        c_node->right->train_index[train_right_counter] = c_node->train_index[i];
-                        train_right_counter++;
-                }
+             if(selected_predictor_train(c_node->train_index[i])<=c_node->var_split_rule){
+                  c_node->left->train_index[train_left_counter] = c_node->train_index[i];
+                  train_left_counter++;
+             } else {
+                  c_node->right->train_index[train_right_counter] = c_node->train_index[i];
+                  train_right_counter++;
+             }
         }
-
 
 
         // Updating the left and the right nodes
         for(int i = 0;i<data.x_test.n_rows;i++){
 
-                if(c_node -> test_index[i] == -1){
-                        c_node->left->n_leaf_test = test_left_counter;
-                        c_node->right->n_leaf_test = test_right_counter;
-                        break;
-                }
+             if(c_node -> test_index[i] == -1){
+                  c_node->left->n_leaf_test = test_left_counter;
+                  c_node->right->n_leaf_test = test_right_counter;
+                  break;
+             }
 
-                if(data.x_test(c_node->test_index[i],c_node->var_split)<=c_node->var_split_rule){
-                        c_node->left->test_index[test_left_counter] = c_node->test_index[i];
-                        test_left_counter++;
-                } else {
-                        c_node->right->test_index[test_right_counter] = c_node->test_index[i];
-                        test_right_counter++;
-                }
+             if(selected_predictor_test(c_node->test_index[i])<=c_node->var_split_rule){
+                  c_node->left->test_index[test_left_counter] = c_node->test_index[i];
+                  test_left_counter++;
+             } else {
+                  c_node->right->test_index[test_right_counter] = c_node->test_index[i];
+                  test_right_counter++;
+             }
         }
+
 
         // If is a root node
         if(c_node->isRoot){
@@ -1438,25 +1581,44 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
      // cout << " Split candidates: " << split_candidates << endl;
      // Trying to find a cutpoint
      Rcpp::NumericVector valid_cutpoint;
+     arma::mat recoded_ranks;
 
      while(!no_valid_node){
           c_node->var_split = split_candidates(p_try);
 
           Rcpp::NumericVector var_split_range;
 
-          // Getting the maximum and the minimum;
-          for(int i = 0; i < c_node->n_leaf; i++){
-               var_split_range.push_back(data.x_train(c_node->train_index[i],c_node->var_split));
-          }
 
-          // Getting the minimum and the maximum;
-          double max_rule = max(var_split_range);
-          double min_rule = min(var_split_range);
-
-          for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
-               if((data.xcut(cut,c_node->var_split)>min_rule) & (data.xcut(cut,c_node->var_split)<max_rule)){
-                    valid_cutpoint.push_back(data.xcut(cut,c_node->var_split));
+          if(data.categorical_indicators(c_node->var_split)==0) {
+               // Getting the maximum and the minimum;
+               for(int i = 0; i < c_node->n_leaf; i++){
+                    var_split_range.push_back(data.x_train(c_node->train_index[i],c_node->var_split));
                }
+
+               // Getting the minimum and the maximum;
+               double max_rule = max(var_split_range);
+               double min_rule = min(var_split_range);
+
+               for(int cut = 0; cut < data.xcut.n_rows; cut++ ){
+                    if((data.xcut(cut,c_node->var_split)>min_rule) & (data.xcut(cut,c_node->var_split)<max_rule)){
+                         valid_cutpoint.push_back(data.xcut(cut,c_node->var_split));
+                    }
+               }
+
+          } else {
+
+               // Getting the maximum and the minimum;
+               for(int i = 0; i < c_node->n_leaf; i++){
+                    var_split_range.push_back(data.x_train(c_node->train_index[i],c_node->var_split));
+               }
+
+               arma::vec var_split_range_arma = Rcpp::as<arma::vec>(var_split_range); // Conversion
+               arma::uvec conv_train_index = arma::conv_to<arma::uvec>::from(c_node->train_index);
+
+               arma::vec leaf_residuals = curr_res.elem(conv_train_index);
+
+               recoded_ranks = replaceWithUniqueRankMatrix(var_split_range_arma,leaf_residuals);
+               valid_cutpoint = Rcpp::wrap(recoded_ranks.col(1));
           }
 
           if(valid_cutpoint.size()==0){
@@ -1470,6 +1632,7 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
                          no_valid_node = true;
                     };
                }
+
           } else {
                break; // Go out from the while
           }
@@ -1492,6 +1655,15 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
      int test_left_counter = 0;
      int test_right_counter = 0;
 
+     arma::vec selected_predictor_train = data.x_train.col(c_node->var_split);
+     arma::vec selected_predictor_test = data.x_test.col(c_node->var_split);
+
+     if(data.categorical_indicators(c_node->var_split)!=0){
+
+          selected_predictor_train = replaceWithMatrixMapping(selected_predictor_train,recoded_ranks);
+          selected_predictor_test = replaceWithMatrixMapping(selected_predictor_test,recoded_ranks);
+
+     }
 
      // Updating the left and the right nodes
      for(int i = 0;i<data.x_train.n_rows;i++){
@@ -1503,7 +1675,7 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
           }
           // cout << " Current train index " << c_node->train_index[i] << endl;
 
-          if(data.x_train(c_node->train_index[i],c_node->var_split)<=c_node->var_split_rule){
+          if(selected_predictor_train(c_node->train_index[i])<=c_node->var_split_rule){
                c_node->left->train_index[train_left_counter] = c_node->train_index[i];
                train_left_counter++;
           } else {
@@ -1523,7 +1695,7 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
                break;
           }
 
-          if(data.x_test(c_node->test_index[i],c_node->var_split)<=c_node->var_split_rule){
+          if(selected_predictor_test(c_node->test_index[i])<=c_node->var_split_rule){
                c_node->left->test_index[test_left_counter] = c_node->test_index[i];
                test_left_counter++;
           } else {
@@ -1925,7 +2097,8 @@ Rcpp::List cppbart(arma::mat x_train,
           bool var_selection_bool,
           bool sv_bool,
           bool hier_prior_bool,
-          arma::mat sv_matrix){
+          arma::mat sv_matrix,
+          arma::vec categorical_indicators){
 
         // Posterior counter
         int curr = 0;
@@ -1949,7 +2122,8 @@ Rcpp::List cppbart(arma::mat x_train,
                         n_mcmc,
                         n_burn,
                         sv_bool,
-                        sv_matrix);
+                        sv_matrix,
+                        categorical_indicators);
 
         // Getting the n_post
         int n_post = n_mcmc - n_burn;
@@ -2232,7 +2406,8 @@ Rcpp::List cppbart_univariate(arma::mat x_train,
                    bool var_selection_bool,
                    bool sv_bool,
                    bool hier_prior_bool,
-                   arma::mat sv_matrix){
+                   arma::mat sv_matrix,
+                   arma::vec categorical_indicators){
 
      // Posterior counter
      int curr = 0;
@@ -2259,7 +2434,8 @@ Rcpp::List cppbart_univariate(arma::mat x_train,
                      n_mcmc,
                      n_burn,
                      sv_bool,
-                     sv_matrix);
+                     sv_matrix,
+                     categorical_indicators);
 
      // Getting the n_post
      int n_post = n_mcmc - n_burn;
@@ -2540,7 +2716,8 @@ Rcpp::List cppbart_missing(arma::mat x_train,
                    bool var_selection_bool,
                    bool sv_bool,
                    bool hier_prior_bool,
-                   arma::mat sv_matrix){
+                   arma::mat sv_matrix,
+                   arma::vec categorical_indicators){
 
         // Posterior counter
         int curr = 0;
@@ -2564,7 +2741,8 @@ Rcpp::List cppbart_missing(arma::mat x_train,
                         n_mcmc,
                         n_burn,
                         sv_bool,
-                        sv_matrix);
+                        sv_matrix,
+                        categorical_indicators);
 
         // Getting the n_post
         int n_post = n_mcmc - n_burn;
@@ -3049,7 +3227,8 @@ Rcpp::List cppbart_CLASS(arma::mat x_train,
                    bool var_selection_bool,
                    bool tn_sampler,
                    bool sv_bool,
-                   arma::mat sv_matrix){
+                   arma::mat sv_matrix,
+                   arma::vec categorical_indicators){
 
         // Posterior counter
         int curr = 0;
@@ -3075,7 +3254,8 @@ Rcpp::List cppbart_CLASS(arma::mat x_train,
                         n_mcmc,
                         n_burn,
                         sv_bool,
-                        sv_matrix);
+                        sv_matrix,
+                        categorical_indicators);
 
         // Getting the n_post
         int n_post = n_mcmc - n_burn;
@@ -3427,7 +3607,8 @@ Rcpp::List cppbart_univariate_CLASS(arma::mat x_train,
                                 bool var_selection_bool,
                                 bool tn_sampler,
                                 bool sv_bool,
-                                arma::mat sv_matrix){
+                                arma::mat sv_matrix,
+                                arma::vec categorical_indicators){
 
         // Posterior counter
         int curr = 0;
@@ -3453,7 +3634,8 @@ Rcpp::List cppbart_univariate_CLASS(arma::mat x_train,
                         n_mcmc,
                         n_burn,
                         sv_bool,
-                        sv_matrix);
+                        sv_matrix,
+                        categorical_indicators);
 
         // Getting the n_post
         int n_post = n_mcmc - n_burn;
