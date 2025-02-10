@@ -1122,8 +1122,8 @@ void change(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec &curr_u
         // Storing the old ones
         int old_var_split = c_node->var_split;
         double old_var_split_rule = c_node->var_split_rule;
-        int old_lower = c_node->lower;
-        int old_upper = c_node->upper;
+        double old_lower = c_node->lower;
+        double old_upper = c_node->upper;
 
         // Choosing only valid cutpoints;
         bool no_valid_node = false;
@@ -1408,8 +1408,8 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
      // Storing the old ones
      int old_var_split = c_node->var_split;
      double old_var_split_rule = c_node->var_split_rule;
-     int old_lower = c_node->lower;
-     int old_upper = c_node->upper;
+     double old_lower = c_node->lower;
+     double old_upper = c_node->upper;
 
      // Choosing only valid cutpoints;
      bool no_valid_node = false;
