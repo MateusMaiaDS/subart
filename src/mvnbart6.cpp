@@ -501,7 +501,7 @@ void grow(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec& curr_u, 
 
         // Store all old quantities that will be used or not
         int old_var_split = g_node->var_split;
-        int old_var_split_rule = g_node->var_split_rule;
+        double old_var_split_rule = g_node->var_split_rule;
 
         // // Calculating the whole likelihood fo the tree
         for(int i = 0; i < t_nodes.size(); i++){
@@ -722,7 +722,7 @@ void grow_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
 
      // Store all old quantities that will be used or not
      int old_var_split = g_node->var_split;
-     int old_var_split_rule = g_node->var_split_rule;
+     double old_var_split_rule = g_node->var_split_rule;
 
      // // Calculating the whole likelihood fo the tree
      for(int i = 0; i < t_nodes.size(); i++){
@@ -1121,7 +1121,7 @@ void change(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec &curr_u
 
         // Storing the old ones
         int old_var_split = c_node->var_split;
-        int old_var_split_rule = c_node->var_split_rule;
+        double old_var_split_rule = c_node->var_split_rule;
         int old_lower = c_node->lower;
         int old_upper = c_node->upper;
 
@@ -1407,7 +1407,7 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
 
      // Storing the old ones
      int old_var_split = c_node->var_split;
-     int old_var_split_rule = c_node->var_split_rule;
+     double old_var_split_rule = c_node->var_split_rule;
      int old_lower = c_node->lower;
      int old_upper = c_node->upper;
 
