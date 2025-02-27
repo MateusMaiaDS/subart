@@ -28,6 +28,12 @@ spectrum0.ar <- function (x){
         return(list(spec = v0, order = order))
 }
 
+#' Calculate the ESS
+#'
+#' @param x a single-chain from a MCMC sampler
+#'
+#' @export
+#'
 ESS <- function (x){
         if(!is.matrix(x)){
                 x <- matrix(x, ncol = 1)
@@ -53,7 +59,10 @@ normalize_covariates_bart <- function(y, a = NULL, b = NULL) {
 }
 
 
-# Coverage for the prediction intervals
+#' Coverage for the prediction intervals
+#'
+#' @export
+#'
 pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications = 1000){
 
         # Getting the number of posterior samples and columns, respect.
@@ -98,7 +107,8 @@ pi_coverage <- function(y, y_hat_post, sd_post, prob = 0.5,n_mcmc_replications =
         return(pi_cov)
 }
 
-# A function to calculate coverage of the credible interval
+#' A function to calculate coverage of the credible interval
+#' @export
 cr_coverage <- function(f_true, f_post, prob = 0.5){
 
 
@@ -126,8 +136,8 @@ normalize_bart <- function(y, a = NULL, b = NULL) {
 
      # Defining the a and b
      if( is.null(a) & is.null(b)){
-          a <- min(y)
-          b <- max(y)
+          a <- min(y,na.rm = TRUE)
+          b <- max(y,na.rm = TRUE)
      }
      # This will normalize y between -0.5 and 0.5
      y  <- (y - a)/(b - a) - 0.5
@@ -156,7 +166,9 @@ naive_sigma <- function(x,y){
      colnames(df)<- c(colnames(x),"y")
 
      # Naive lm_mod
-     lm_mod <- stats::lm(formula = y ~ ., data =  df)
+     lm_mod <- stats::lm(formula = y ~ .,
+                         data =  df,
+                         na.action = na.omit)
 
      # Getting sigma
      sigma <- summary(lm_mod)$sigma
@@ -168,8 +180,10 @@ naive_sigma <- function(x,y){
 
 
 
-# Function to create a vector of variables that being categorical will
-#have the same code
+
+#' Recoding variables
+#' @export
+#'
 recode_vars <- function(x_train, dummy_obj){
 
         vars <- numeric()
@@ -195,12 +209,17 @@ recode_vars <- function(x_train, dummy_obj){
         return(vars)
 }
 
-# Calculating the rmse
+#' RMSE: Calculating the rmse
+#'
+#' @export
+#'
 rmse <- function(x,y){
      return(sqrt(mean((y-x)^2)))
 }
 
-# Calculating CRPS from (https://arxiv.org/pdf/1709.04743.pdf)
+#' Calculating CRPS from (https://arxiv.org/pdf/1709.04743.pdf)
+#' @export
+#'
 crps <- function(y,means,sds){
 
      # scaling the observed y
@@ -212,7 +231,9 @@ crps <- function(y,means,sds){
 }
 
 
-# Calculating a Frequentist confidence interval covarage
+#' Calculating a Frequentist confidence interval covarage
+#' @export
+#'
 ci_coverage <- function(y_,
                         y_hat_,
                         sd_,
@@ -227,7 +248,8 @@ ci_coverage <- function(y_,
         return(ci_cov)
 }
 
-# Binary classification metrics
+#' Binary classification metrics
+#' @export
 logloss <- function(y_true, y_hat){
 
 
@@ -259,6 +281,10 @@ logloss <- function(y_true, y_hat){
 
 }
 
+#' Brier Score
+#
+#' @export
+#'
 brierscore <- function(y_true, y_hat){
 
 
@@ -285,7 +311,10 @@ brierscore <- function(y_true, y_hat){
 
 }
 
-# Getting the accuracy
+#' Getting the accuracy
+#'
+#' @export
+#'
 acc <- function(y_true, y_hat){
 
 
@@ -311,7 +340,10 @@ acc <- function(y_true, y_hat){
 
 }
 
-# Getting the accuracy
+#' Getting the mcc
+#'
+#' @export
+#'
 mcc <- function(y_true, y_hat){
 
 

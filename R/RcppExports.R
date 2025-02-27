@@ -21,15 +21,31 @@ log_dmvn <- function(x, Sigma) {
     .Call('_subart_log_dmvn', PACKAGE = 'subart', x, Sigma)
 }
 
-cppbart <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix) {
-    .Call('_subart_cppbart', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix)
+replaceWithUniqueRankMatrix <- function(categories, values) {
+    .Call('_subart_replaceWithUniqueRankMatrix', PACKAGE = 'subart', categories, values)
+}
+
+cppbart <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators) {
+    .Call('_subart_cppbart', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators)
+}
+
+cppbart_univariate <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators) {
+    .Call('_subart_cppbart_univariate', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators)
+}
+
+cppbart_missing <- function(x_train, y_mat, n_missing, na_indicators, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators) {
+    .Call('_subart_cppbart_missing', PACKAGE = 'subart', x_train, y_mat, n_missing, na_indicators, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, alpha, beta, nu, S_0_wish, A_j_vec, update_Sigma, var_selection_bool, sv_bool, hier_prior_bool, sv_matrix, categorical_indicators)
 }
 
 truncated_sample <- function(mu, left, sigma_) {
     .Call('_subart_truncated_sample', PACKAGE = 'subart', mu, left, sigma_)
 }
 
-cppbart_CLASS <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix) {
-    .Call('_subart_cppbart_CLASS', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix)
+cppbart_CLASS <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix, categorical_indicators) {
+    .Call('_subart_cppbart_CLASS', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix, categorical_indicators)
+}
+
+cppbart_univariate_CLASS <- function(x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix, categorical_indicators) {
+    .Call('_subart_cppbart_univariate_CLASS', PACKAGE = 'subart', x_train, y_mat, x_test, x_cut, n_tree, node_min_size, n_mcmc, n_burn, Sigma_init, mu_init, sigma_mu, nu, alpha, beta, m, update_sigma, var_selection_bool, tn_sampler, sv_bool, sv_matrix, categorical_indicators)
 }
 

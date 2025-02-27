@@ -1,9 +1,7 @@
 library(subart)
 library(expm)
 library(scales)
-
-# install.packages("devtools")
-# devtools::install_github("MateusMaiaDS/subart",ref = "feat/binary_missing")
+rm(list=ls())
 devtools::load_all()
 # simulation setup
 f <- function(x){
