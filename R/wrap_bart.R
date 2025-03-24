@@ -545,7 +545,7 @@ subart <- function(x_train,
 
                      class(var_importance) <- "varimportance"
              } else {
-                    var_importance <- var_importance <- NULL
+                    var_importance_raw <- var_importance <- NULL
              }
 
              # Calculate the ESS for all parameters throw a warning if any of them is smaller than half of the MCMC samples
