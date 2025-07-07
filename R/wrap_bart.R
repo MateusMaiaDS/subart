@@ -18,7 +18,7 @@
 #'
 #' @param x_train A \code{data.frame} of the training data covariates.
 #' @param y_mat A numeric matrix of the data responses.
-#' @param x_test A \code{data.frame} of the test data covariates.
+#' @param x_test A \code{data.frame} of the test data covariates. If `NULL` only predictions for `x_train` will be used.
 #' @param n_tree The number of trees used in each set of trees for the respective \eqn{j} entry. The total number of trees is given by \eqn{j \times p}.
 #' @param node_min_size The minimun number of observations within a terminal node.
 #' @param n_mcmc The total number of MCMC iterations.
@@ -38,7 +38,7 @@
 #' @export
 subart <- function(x_train,
                   y_mat,
-                  x_test,
+                  x_test = NULL,
                   n_tree = 100,
                   node_min_size = 5,
                   n_mcmc = 2000,
@@ -56,6 +56,15 @@ subart <- function(x_train,
                   specify_variables = NULL, # Specify variables for each dimension (j) by name or index for.,
                   diagnostic = TRUE # Calculates the Effective Sample size for the covariance and correlation parameters
                   ) {
+
+
+     # Transforming x_test in a simple 2line data.frame when x_test is set as NULL
+     if(is.null(x_test)){
+             x_test <- x_train[1:2,,drop =FALSE]
+             null_x_test <- TRUE
+     } else {
+             null_x_test <- FALSE
+     }
 
      # Handling error heading
      if(n_mcmc<=n_burn){
@@ -77,6 +86,7 @@ subart <- function(x_train,
      }
 
      ## End error handling
+
 
      # Defining initial paramters that are no longer up to the user to define
      scale_y <- TRUE # If the target variable Y gonna be scaled or not
@@ -576,13 +586,23 @@ subart <- function(x_train,
 
 
 
+             # In case x_test is NULL
+             if(null_x_test){
+                     y_test_post <- NULL
+                     y_mat_test_mean <- NULL
+                     y_hat_test_mean_class <- NULL
+                     x_test <- NULL
+             } else {
+                     y_hat_test_mean_class <- apply(y_mat_test_mean,2,function(x){ifelse(x>0,1,0)})
+             }
+
 
              list_obj_ <- list(y_hat = y_train_post,
                   y_hat_test = y_test_post,
                   y_hat_mean = y_mat_mean,
                   y_hat_test_mean = y_mat_test_mean,
                   y_hat_mean_class = apply(y_mat_mean,2,function(x){ifelse(x>0,1,0)}),
-                  y_hat_test_mean_class = apply(y_mat_test_mean,2,function(x){ifelse(x>0,1,0)}),
+                  y_hat_test_mean_class = y_hat_test_mean_class,
                   Sigma_post = Sigma_post,
                   Sigma_post_mean = Sigma_post_mean,
                   sigmas_post = bart_obj[[7]],
@@ -648,6 +668,12 @@ subart <- function(x_train,
                      warning(paste0("A ESS less than ",round((n_mcmc-n_burn)/2,digits = 0)," was obtanied. Verify the traceplots and adjust the priors to improve the sampling."))
              }
 
+             # Case x_test = NULL
+             if(null_x_test){
+                     y_test_post <- NULL
+                     y_hat_test_mean <- NULL
+                     x_test <- NULL
+             }
 
              # Returning the data list
              data_list <- if(na_boolean){

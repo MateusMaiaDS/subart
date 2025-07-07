@@ -31,7 +31,7 @@ subart(
 
 \item{y_mat}{A numeric matrix of the data responses.}
 
-\item{x_test}{A \code{data.frame} of the test data covariates.}
+\item{x_test}{A \code{data.frame} of the test data covariates. If `NULL` only predictions for `x_train` will be used.}
 
 \item{n_tree}{The number of trees used in each set of trees for the respective \eqn{j} entry. The total number of trees is given by \eqn{j \times p}.}
 
