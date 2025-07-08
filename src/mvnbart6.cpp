@@ -673,7 +673,7 @@ void grow(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec& curr_u, 
 
 
         // Selecting a rule (here I'm actually selecting the var split rule);
-        g_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()))];
+        g_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()-1))];
         // cout << "The current var split rule is: " << g_node->var_split_rule << endl;
 
         // Create an aux for the left and right index
@@ -918,7 +918,7 @@ void grow_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
      }
 
      // Selecting a rule (here I'm actually selecting the var split rule);
-     g_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()))];
+     g_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()-1))];
      // cout << "The current var split rule is: " << g_node->var_split_rule << endl;
 
      // Create an aux for the left and right index
@@ -1331,7 +1331,7 @@ void change(Node* tree, modelParam &data, arma::vec &curr_res, arma::vec &curr_u
         }
 
         // Selecting a rule (here I'm actually selecting the var split rule);
-        c_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()))];
+        c_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()-1))];
 
         // Create an aux for the left and right index
         int train_left_counter = 0;
@@ -1646,7 +1646,7 @@ void change_uni(Node* tree, modelParam &data, arma::vec &curr_res, int y_j_){
      }
 
      // Selecting a rule (here I'm actually selecting the var split rule);
-     c_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()))];
+     c_node->var_split_rule = valid_cutpoint[arma::randi(arma::distr_param(0,valid_cutpoint.size()-1))];
 
      // Create an aux for the left and right index
      int train_left_counter = 0;
