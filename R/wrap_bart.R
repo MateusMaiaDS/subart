@@ -16,9 +16,9 @@
 #' Probit-MVN approach is used, and returns the \code{subart} object.
 #'
 #'
-#' @param x_train A \code{data.frame} of the training data covariates.
+#' @param x_train A \code{data.frame} of the training data covariates. When \code{x_train} contains unordered categorical variables with more than two levels, the corresponding columns should be defined as factors. 
 #' @param y_mat A numeric matrix of the data responses.
-#' @param x_test A \code{data.frame} of the test data covariates. If `NULL` only predictions for `x_train` will be used.
+#' @param x_test A \code{data.frame} of the test data covariates. If `NULL` only predictions for \code{x_train} will be used. The columns of \code{x_test} should match those of \code{x_train} in name, order and type.
 #' @param n_tree The number of trees used in each set of trees for the respective \eqn{j} entry. The total number of trees is given by \eqn{j \times p}.
 #' @param node_min_size The minimun number of observations within a terminal node.
 #' @param n_mcmc The total number of MCMC iterations.
