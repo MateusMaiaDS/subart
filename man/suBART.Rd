@@ -7,7 +7,7 @@
 subart(
   x_train,
   y_mat,
-  x_test,
+  x_test = NULL,
   n_tree = 100,
   node_min_size = 5,
   n_mcmc = 2000,
@@ -27,11 +27,11 @@ subart(
 )
 }
 \arguments{
-\item{x_train}{A \code{data.frame} of the training data covariates.}
+\item{x_train}{A \code{data.frame} of the training data covariates. When \code{x_train} contains unordered categorical variables with more than two levels, the corresponding columns should be defined as factors.}
 
 \item{y_mat}{A numeric matrix of the data responses.}
 
-\item{x_test}{A \code{data.frame} of the test data covariates. If `NULL` only predictions for `x_train` will be used.}
+\item{x_test}{A \code{data.frame} of the test data covariates. If `NULL` only predictions for \code{x_train} will be used. The columns of \code{x_test} should match those of \code{x_train} in name, order and type.}
 
 \item{n_tree}{The number of trees used in each set of trees for the respective \eqn{j} entry. The total number of trees is given by \eqn{j \times p}.}
 
