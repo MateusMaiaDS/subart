@@ -1,5 +1,6 @@
 rm(list=ls())
 set.seed(42)
+
 # ==========================
 # Packages
 # ==========================
@@ -22,23 +23,24 @@ library(surbayes)
 
 # load & preprocess
 data("ttcm")
-data <- ttcm
-data <- as.data.frame(unclass(data), stringsAsFactors = TRUE)
+data_ttcm <- ttcm
+data_ttcm <- as.data.frame(unclass(data_ttcm), stringsAsFactors = TRUE)
 standardise <- function(x) (x - mean(x)) / sd(x)
 
 X <- data.frame(
-  gender = as.integer(data$gender) - 1,
-  age = standardise(data$age),
-  education = data$education,
-  disease_history = data$disease_history,
-  trauma_type = data$trauma_type,
-  fracture_region = data$fracture_region,
-  ISS = standardise(data$ISS),
-  hospital_duration = data$hospital_duration,
-  surgery = as.integer(data$surgery) - 1,
-  TTO = standardise(data$TTO),
-  admission = as.integer(as.factor(data$admission)) - 1
+  gender = as.integer(data_ttcm$gender) - 1,
+  age = standardise(data_ttcm$age),
+  education = data_ttcm$education,
+  disease_history = data_ttcm$disease_history,
+  trauma_type = data_ttcm$trauma_type,
+  fracture_region = data_ttcm$fracture_region,
+  ISS = standardise(data_ttcm$ISS),
+  hospital_duration = data_ttcm$hospital_duration,
+  surgery = as.integer(data_ttcm$surgery) - 1,
+  TTO = standardise(data_ttcm$TTO),
+  admission = as.integer(as.factor(data_ttcm$admission)) - 1
 )
+
 # prognostic functions and treatment effects
 mu_C <- function(gender, age, education, TTO, surgery) {
   return(2000 + 500 * age + (-200) * education + 500 * surgery)

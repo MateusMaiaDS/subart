@@ -698,10 +698,8 @@ cv_matrix_stan_mvn <- function(cv_element_,
                                n_burn_) {
   library(rstan)
 
-  if (task_ == "regression") {
-    stop("Do not run a STAN model anymore. Use surbayes package instead for regression.")
-  }
-
+  # For replicate paper results this should be only used for the BayesSUR classification settings.
+  
   # Extract train/test data
   x_train <- cv_element_$train$x
   y_train <- cv_element_$train$y
