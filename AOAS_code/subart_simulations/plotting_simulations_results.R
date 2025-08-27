@@ -17,7 +17,7 @@ library(tidyverse)
 # -------------------------------
 # Settings
 # -------------------------------
-n_ <- 100 # set to n_ <- 250 or n_ <- 500 to consider other settings in the paper
+n_ <- 250 # set to n_ <- 250 or n_ <- 500 to consider other settings in the paper
 p_ <- 10
 n_tree_ <- 100
 mvn_dim_ <- 2 # set to mvn_dim_ <- 2 to consider other setting in the paper

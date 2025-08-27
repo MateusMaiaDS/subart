@@ -20,11 +20,11 @@ library(surbayes)
 seed_ <- 43
 set.seed(seed_)
 
-n_ <- 100 # vary n_ \in {250,500,1000} to consider different scenarios in the paper
+n_ <- 250 # vary n_ \in {250,500,1000} to consider different scenarios in the paper
 p_ <- 10
 n_tree_ <- 100
-n_mcmc_ <- 200 # See paper specifications to define
-n_burn_ <- 100
+n_mcmc_ <- 5000 # See paper specifications to define
+n_burn_ <- 2000
 mvn_dim_ <- 2 # vary mvn_dim_ \in {2, 3} to consider different scenarios in the paper
 task_ <- "classification" # 'classification' or 'regression'
 sim_ <- "friedman2" # 'friedman1' or 'friedman2' -- first one corresponds to regression, second one to classification
@@ -43,7 +43,7 @@ cat(
   "sim", sim_, "\n"
 )
 
-n_rep <- 1 # Set 100 as the default in the paper
+n_rep <- 100 # Set 100 as the default in the paper
 cv_ <- vector("list", length = n_rep)
 
 # -------------------------------
