@@ -26,9 +26,9 @@ n_tree_ <- 100
 n_mcmc_ <- 5000 # See paper specifications to define
 n_burn_ <- 2000
 mvn_dim_ <- 2 # vary mvn_dim_ \in {2, 3} to consider different scenarios in the paper
-task_ <- "classification" # 'classification' or 'regression'
-sim_ <- "friedman2" # 'friedman1' or 'friedman2' -- first one corresponds to regression, second one to classification
-model <- "mvBART" # vary the model to produce different results from the paper
+task_ <- "regression" # 'classification' or 'regression'
+sim_ <- "friedman1" # 'friedman1' or 'friedman2' -- first one corresponds to regression, second one to classification
+model <- "subart" # vary the model to produce different results from the paper
 
 if (!model %in% c("BayesSUR", "subart", "bart", "mvBART")) {
   stop("Not a valid model!")
