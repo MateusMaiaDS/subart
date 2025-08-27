@@ -20,7 +20,7 @@ cv_matrix_bart <- function(cv_element_,
                            task_,
                            n_mcmc_,
                            n_burn_) {
-  
+
   # Extract train/test data
   x_train <- cv_element_$train$x
   y_train <- cv_element_$train$y
@@ -449,8 +449,8 @@ cv_matrix_BayesSUR <- function(cv_element_,
     # Manual reconstruction using betadraw
     aux_counter <- 0:(mvn_dim_ - 1)
     for (i_aux in 1:mvn_dim_) {
-      surmod_test_predict[, i_aux, ] <- tcrossprod(cbind(1, x_test), sur_mod$betadraw[, 11 * aux_counter[i_aux] + 1:11])
-      surmod_train_predict[, i_aux, ] <- tcrossprod(cbind(1, x_train), sur_mod$betadraw[, 11 * aux_counter[i_aux] + 1:11])
+      surmod_test_predict[, i_aux, ] <- tcrossprod(cbind(1, as.matrix(x_test)), sur_mod$betadraw[, 11 * aux_counter[i_aux] + 1:11])
+      surmod_train_predict[, i_aux, ] <- tcrossprod(cbind(1, as.matrix(x_train)), sur_mod$betadraw[, 11 * aux_counter[i_aux] + 1:11])
     }
 
     # Compute CRPS
@@ -706,7 +706,7 @@ cv_matrix_stan_mvn <- function(cv_element_,
                                task_,
                                n_mcmc_,
                                n_burn_) {
-  
+
   # To replicate paper results, this should be only used for the BayesSUR classification settings.
 
   # Extract train/test data

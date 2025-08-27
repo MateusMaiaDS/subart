@@ -5,6 +5,8 @@ rm(list = ls(all = TRUE))
 # -------------------------------
 # Packages
 # -------------------------------
+# devtools::install_github("Seungha-Um/skewBART")
+
 library(dbarts)
 library(doParallel)
 library(dplyr)
@@ -21,12 +23,12 @@ set.seed(seed_)
 n_ <- 100 # vary n_ \in {250,500,1000} to consider different scenarios in the paper
 p_ <- 10
 n_tree_ <- 100
-n_mcmc_ <- 500 # See paper specifications to define
-n_burn_ <- 200
+n_mcmc_ <- 200 # See paper specifications to define
+n_burn_ <- 100
 mvn_dim_ <- 2 # vary mvn_dim_ \in {2, 3} to consider different scenarios in the paper
-task_ <- "regression" # 'classification' or 'regression'
-sim_ <- "friedman1" # 'friedman1' or 'friedman2'
-model <- "subart" # vary the model to produce different results from the paper
+task_ <- "classification" # 'classification' or 'regression'
+sim_ <- "friedman2" # 'friedman1' or 'friedman2' -- first one corresponds to regression, second one to classification
+model <- "mvBART" # vary the model to produce different results from the paper
 
 if (!model %in% c("BayesSUR", "subart", "bart", "mvBART")) {
   stop("Not a valid model!")
@@ -49,7 +51,7 @@ cv_ <- vector("list", length = n_rep)
 # -------------------------------
 sim_fun <- switch(paste(task_, sim_, sep = "_"),
   "regression_friedman1" = subart::sim_mvn_friedman1,
-  "classification_friedman1" = subart::sim_mvn_friedman1,
+  "classification_friedman2" = subart::sim_mvn_friedman2,
   stop("Insert a valid task and simulation")
 )
 
@@ -66,13 +68,13 @@ cl <- parallel::makeCluster(number_cores)
 doParallel::registerDoParallel(cl)
 
 if (model == "BayesSUR" & task_ == "classification") {
-  source("stan_classification_compile.R")
+  source("subart_simulations/stan_classification_compile.R")
 }
 
 # -------------------------------
 # Directory to save results
 # -------------------------------
-path <- "inst/"
+path <- "subart_simulations" # you may need to change this depending on your local machine
 if (!(file.exists(path) && file.info(path)$isdir)) {
   stop("Insert a valid directory path to save the models")
 }

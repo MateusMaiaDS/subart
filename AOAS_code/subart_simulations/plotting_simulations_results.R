@@ -17,13 +17,13 @@ library(tidyverse)
 # -------------------------------
 # Settings
 # -------------------------------
-n_ <- 1000 # set to n_ <- 250 or n_ <- 500 to consider other settings in the paper
+n_ <- 100 # set to n_ <- 250 or n_ <- 500 to consider other settings in the paper
 p_ <- 10
 n_tree_ <- 100
-mvn_dim_ <- 3 # set to mvn_dim_ <- 2 to consider other setting in the paper
+mvn_dim_ <- 2 # set to mvn_dim_ <- 2 to consider other setting in the paper
 seed_ <- 43
 task_ <- "classification" # 'classification' or 'regression'
-sim_ <- "friedman1" # 'friedman1' or 'friedman2'
+sim_ <- "friedman2" # 'friedman1' or 'friedman2' -- first one corresponds to regression, second one to classification
 
 set.seed(43)
 
@@ -38,8 +38,8 @@ models <- switch(paste(task_, mvn_dim_, sep = "_"),
   stop("No valid setting")
 )
 
-results_path <- "/subart_simulations/"
-save_plots_path <- "/subart_simulations/"
+results_path <- "subart_simulations"
+save_plots_path <- "subart_simulations/"
 
 if (!(file.exists(results_path) && file.info(results_path)$isdir)) {
   stop("Insert a valid directory path from which to load saved results")
