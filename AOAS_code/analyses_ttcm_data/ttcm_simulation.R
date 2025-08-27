@@ -309,13 +309,13 @@ estimands <- list(
 # from GitHub by uncommenting the appropriate line.
 
 # For Table A.1
-# results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_0.rds")
+# results_summary <- readRDS("ttcm_simulations_rho_0.rds")
 
 # For Table A.2, Table 3, and Table 4
-# results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_-0.25.rds")
+# results_summary <- readRDS("ttcm_simulations_rho_-0.25.rds")
 
 # For Table A.3
-# results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_-0.5.rds")
+# results_summary <- readRDS("ttcm_simulations_rho_-0.5.rds")
 
 # --- build results ---
 sim_results <- do.call(rbind, lapply(names(results_summary), function(model) {
