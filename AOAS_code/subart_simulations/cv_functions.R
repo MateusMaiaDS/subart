@@ -1,4 +1,16 @@
+# -------------------------------
+# Packages
+# -------------------------------
+library(rstan)
+library(scoringRules)
+library(skewBART)
+library(subart)
+library(surBayes)
+library(systemfit)
+
+# -------------------------------
 # Cross-validation wrapper for BART models
+# -------------------------------
 cv_matrix_bart <- function(cv_element_,
                            n_tree_,
                            mvn_dim_,
@@ -8,8 +20,7 @@ cv_matrix_bart <- function(cv_element_,
                            task_,
                            n_mcmc_,
                            n_burn_) {
-  library(subart)
-
+  
   # Extract train/test data
   x_train <- cv_element_$train$x
   y_train <- cv_element_$train$y
@@ -29,7 +40,7 @@ cv_matrix_bart <- function(cv_element_,
 
   Sigma_ <- cv_element_$train$Sigma
 
-  # Initialize storage
+  # Initialise storage
   bart_models <- vector("list", mvn_dim_)
   comparison_metrics <- data.frame(
     metric = character(),
@@ -54,7 +65,7 @@ cv_matrix_bart <- function(cv_element_,
   # Fit BART models
   for (i_ in seq_len(mvn_dim_)) {
     bart_models[[i_]] <- subart(
-      x_train = x_train, y_mat = y_train[, i_, drop = FALSE],
+      x_train = x_train, y_train = y_train[, i_, drop = FALSE],
       x_test = x_test, n_tree = n_tree_,
       n_mcmc = n_mcmc_, n_burn = n_burn_
     )
@@ -161,9 +172,9 @@ cv_matrix_bart <- function(cv_element_,
   )
 }
 
-
-
-## This file stores all CV functions for BART, subart, mvBART
+# -------------------------------
+# Cross-validation wrapper for subart models
+# -------------------------------
 cv_matrix_subart <- function(cv_element_,
                              n_tree_,
                              mvn_dim_,
@@ -173,7 +184,6 @@ cv_matrix_subart <- function(cv_element_,
                              task_,
                              n_mcmc_,
                              n_burn_) {
-  library(subart)
 
   # Extract training and testing data
   x_train <- cv_element_$train$x
@@ -193,7 +203,7 @@ cv_matrix_subart <- function(cv_element_,
     p_true_test <- pnorm(z_true_test)
   }
 
-  # Initialize containers
+  # Initialise containers
   comparison_metrics <- data.frame(
     metric = character(),
     value = numeric(),
@@ -218,13 +228,13 @@ cv_matrix_subart <- function(cv_element_,
   # Fit suBART model
   if (task_ == "regression") {
     subart_mod <- subart(
-      x_train = x_train, y_mat = y_train, x_test = x_test,
+      x_train = x_train, y_train = y_train, x_test = x_test,
       n_tree = n_tree_, n_mcmc = n_mcmc_, n_burn = n_burn_
     )
   } else if (task_ == "classification") {
     m_val <- ifelse(ncol(y_train) == 2, nrow(x_train) / 10, nrow(x_train) / 2)
     subart_mod <- subart(
-      x_train = x_train, y_mat = y_train, x_test = x_test,
+      x_train = x_train, y_train = y_train, x_test = x_test,
       m = m_val, n_tree = n_tree_, n_mcmc = n_mcmc_, n_burn = n_burn_
     )
   }
@@ -312,7 +322,7 @@ cv_matrix_subart <- function(cv_element_,
     }
   }
 
-  # Correlation metrics (handling mvn_dim 2 and 3)
+  # Correlation metrics (handling mvn_dim_ 2 and 3)
   if (mvn_dim_ %in% 2:3) {
     rho_indices <- combn(mvn_dim_, 2)
     for (k in 1:ncol(rho_indices)) {
@@ -364,8 +374,10 @@ cv_matrix_subart <- function(cv_element_,
   ))
 }
 
-# Cross-validation wrapper for Bayesian SUR models
-cv_matrix_bayesSUR <- function(cv_element_,
+# -------------------------------
+# Cross-validation wrapper for BayesSUR models
+# -------------------------------
+cv_matrix_BayesSUR <- function(cv_element_,
                                n_tree_,
                                mvn_dim_,
                                n_,
@@ -374,8 +386,6 @@ cv_matrix_bayesSUR <- function(cv_element_,
                                task_,
                                n_mcmc_,
                                n_burn_) {
-  library(surbayes)
-  library(systemfit)
 
   # Extract train/test data
   x_train <- cv_element_$train$x
@@ -396,7 +406,7 @@ cv_matrix_bayesSUR <- function(cv_element_,
 
   Sigma_ <- cv_element_$train$Sigma
 
-  # Initialize storage
+  # Initialise storage
   comparison_metrics <- data.frame(
     metric = character(),
     value = numeric(),
@@ -426,7 +436,7 @@ cv_matrix_bayesSUR <- function(cv_element_,
     })
 
     # Fit Bayesian SUR
-    sur_mod <- surbayes::sur_sample(
+    sur_mod <- surBayes::sur_sample(
       formula.list = eqSystem,
       data = train_data,
       M = (n_mcmc_ - n_burn_)
@@ -478,7 +488,7 @@ cv_matrix_bayesSUR <- function(cv_element_,
             sqrt(sapply(sur_mod$Sigmalist, function(x) x[i_, i_])), 0.5
           )
         ),
-        model = "bayesSUR",
+        model = "BayesSUR",
         fold = i,
         mvn_dim = i_
       ))
@@ -496,7 +506,7 @@ cv_matrix_bayesSUR <- function(cv_element_,
           cr_coverage(rho_true, matrix(rho_post, ncol = length(rho_post)), 0.5),
           rmse(mean(rho_post), rho_true)
         ),
-        model = "bayesSUR",
+        model = "BayesSUR",
         mvn_dim = mvn_dim_,
         param_index = paste0("rho", idx[1], idx[2]),
         fold = i
@@ -513,7 +523,7 @@ cv_matrix_bayesSUR <- function(cv_element_,
           cr_coverage(sigma_true, matrix(sigma_post, ncol = length(sigma_post)), 0.5),
           rmse(mean(sigma_post), sigma_true)
         ),
-        model = "bayesSUR",
+        model = "BayesSUR",
         mvn_dim = mvn_dim_,
         param_index = paste0("sigma", jj_, jj_),
         fold = i
@@ -530,7 +540,9 @@ cv_matrix_bayesSUR <- function(cv_element_,
 
 
 
-# Cross-validation wrapper for skewBART models
+# -------------------------------
+# Cross-validation wrapper for mvBART/skewBART models
+# -------------------------------
 cv_matrix_skewBART <- function(cv_element_,
                                n_tree_,
                                mvn_dim_,
@@ -540,7 +552,6 @@ cv_matrix_skewBART <- function(cv_element_,
                                task_,
                                n_mcmc_,
                                n_burn_) {
-  library(skewBART)
 
   # Extract train/test data
   x_train <- cv_element_$train$x
@@ -561,7 +572,7 @@ cv_matrix_skewBART <- function(cv_element_,
 
   Sigma_ <- cv_element_$train$Sigma
 
-  # Initialize storage
+  # Initialise storage
   comparison_metrics <- data.frame(
     metric = character(),
     value = numeric(),
@@ -682,10 +693,9 @@ cv_matrix_skewBART <- function(cv_element_,
   ))
 }
 
-
-
-
+# -------------------------------
 # Cross-validation wrapper for STAN MVN models
+# -------------------------------
 cv_matrix_stan_mvn <- function(cv_element_,
                                n_tree_,
                                mvn_dim_,
@@ -696,10 +706,9 @@ cv_matrix_stan_mvn <- function(cv_element_,
                                task_,
                                n_mcmc_,
                                n_burn_) {
-  library(rstan)
-
-  # For replicate paper results this should be only used for the BayesSUR classification settings.
   
+  # To replicate paper results, this should be only used for the BayesSUR classification settings.
+
   # Extract train/test data
   x_train <- cv_element_$train$x
   y_train <- cv_element_$train$y
@@ -719,7 +728,7 @@ cv_matrix_stan_mvn <- function(cv_element_,
 
   Sigma_ <- cv_element_$train$Sigma
 
-  # Initialize metric storage
+  # Initialise metric storage
   comparison_metrics <- data.frame(
     metric = character(),
     value = numeric(),
@@ -784,7 +793,7 @@ cv_matrix_stan_mvn <- function(cv_element_,
         cr_coverage(p_true_train[, j], t(stan_samples_class$p_hat_train[, , j]), 0.5),
         cr_coverage(p_true_test[, j], t(stan_samples_class$p_hat_test[, , j]), 0.5)
       ),
-      model = "bayesSUR",
+      model = "BayesSUR",
       fold = i,
       mvn_dim = j
     )
@@ -803,7 +812,7 @@ cv_matrix_stan_mvn <- function(cv_element_,
           cr_coverage(rho_, matrix(rho_post, ncol = length(rho_post)), 0.5),
           rmse(mean(rho_post), rho_)
         ),
-        model = "bayesSUR",
+        model = "BayesSUR",
         mvn_dim = mvn_dim_,
         param_index = "rho12",
         fold = i
@@ -830,7 +839,7 @@ cv_matrix_stan_mvn <- function(cv_element_,
             cr_coverage(rho_true, matrix(rho_post, ncol = length(rho_post)), 0.5),
             rmse(mean(rho_post), rho_true)
           ),
-          model = "bayesSUR",
+          model = "BayesSUR",
           mvn_dim = mvn_dim_,
           param_index = rho_name,
           fold = i
@@ -845,3 +854,7 @@ cv_matrix_stan_mvn <- function(cv_element_,
     sigma = stan_samples_class$Omega
   ))
 }
+
+# ------------------------------- #
+# ------------------------------- #
+# ------------------------------- #

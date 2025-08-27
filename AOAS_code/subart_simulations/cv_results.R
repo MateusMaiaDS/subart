@@ -1,29 +1,34 @@
-## This file runs all models: BART, subart, mvBART, bayesSUR
+## This file runs all models: BART, subart, mvBART, BayesSUR
 
-rm(list = ls())
+rm(list = ls(all = TRUE))
+
+# -------------------------------
+# Packages
+# -------------------------------
+library(dbarts)
 library(doParallel)
 library(dplyr)
-library(subart)
-library(dbarts)
 library(skewBART)
-library(surbayes)
+library(subart)
+library(surBayes)
 
 # -------------------------------
 # Simulation settings
 # -------------------------------
 seed_ <- 43
 set.seed(seed_)
-n_ <- 250 # n = {250,500,1000}
+
+n_ <- 250 # vary n_ \in {250,500,1000} to consider different scenarios in the paper
 p_ <- 10
 n_tree_ <- 100
 n_mcmc_ <- 5000 # See paper specifications to define
 n_burn_ <- 2000
-mvn_dim_ <- 2
+mvn_dim_ <- 2 # vary mvn_dim_ \in {2, 3} to consider different scenarios in the paper
 task_ <- "regression" # 'classification' or 'regression'
 sim_ <- "friedman1" # 'friedman1' or 'friedman2'
-model <- "subart"
+model <- "subart" # vary the model to produce different results from the paper
 
-if (!model %in% c("bayesSUR", "subart", "bart", "mvBART")) {
+if (!model %in% c("BayesSUR", "subart", "bart", "mvBART")) {
   stop("Not a valid model!")
 }
 
@@ -61,14 +66,14 @@ number_cores <- 2
 cl <- parallel::makeCluster(number_cores)
 doParallel::registerDoParallel(cl)
 
-if (model == "bayesSUR" & task_ == "classification") {
-  source("AOAS_code/stan_classification_compile.R")
+if (model == "BayesSUR" & task_ == "classification") {
+  source("stan_classification_compile.R")
 }
 
 # -------------------------------
 # Directory to save results
 # -------------------------------
-path <- "inst/"
+path <- "/subart_simulations/"
 if (!(file.exists(path) && file.info(path)$isdir)) {
   stop("Insert a valid directory path to save the models")
 }
@@ -76,8 +81,8 @@ if (!(file.exists(path) && file.info(path)$isdir)) {
 # -------------------------------
 # Run models in parallel
 # -------------------------------
-result <- foreach(i = 1:n_rep, .packages = c("dbarts", "skewBART", "surbayes", "dplyr", "subart")) %dopar% {
-  source("AOAS_code/subart_simulations/cv_functions.R")
+result <- foreach(i = 1:n_rep, .packages = c("dbarts", "dplyr", "skewBART", "subart", "surBayes")) %dopar% {
+  source("subart_simulations/cv_functions.R")
 
   aux <- switch(model,
     "bart" = cv_matrix_bart(
@@ -92,9 +97,9 @@ result <- foreach(i = 1:n_rep, .packages = c("dbarts", "skewBART", "surbayes", "
       cv_element_ = cv_[[i]], n_tree_ = n_tree_, mvn_dim_ = mvn_dim_,
       n_ = n_, p_ = p_, i = i, task_ = task_, n_mcmc_ = n_mcmc_, n_burn_ = n_burn_
     ),
-    "bayesSUR" = {
+    "BayesSUR" = {
       if (task_ == "regression") {
-        cv_matrix_bayesSUR(
+        cv_matrix_BayesSUR(
           cv_element_ = cv_[[i]], n_tree_ = n_tree_, mvn_dim_ = mvn_dim_,
           n_ = n_, p_ = p_, i = i, task_ = task_, n_mcmc_ = n_mcmc_, n_burn_ = n_burn_
         )
@@ -109,7 +114,6 @@ result <- foreach(i = 1:n_rep, .packages = c("dbarts", "skewBART", "surbayes", "
     },
     stop("No valid model and task selected")
   )
-
   aux
 }
 
@@ -122,3 +126,7 @@ saveRDS(result, file = paste0(
   path, "seed_", seed_, "_", model, "_", sim_, "_", task_,
   "_n_", n_, "_p_", p_, "_ntree_", n_tree_, "_mvndim_", mvn_dim_, ".Rds"
 ))
+
+# ------------------------------- #
+# ------------------------------- #
+# ------------------------------- #

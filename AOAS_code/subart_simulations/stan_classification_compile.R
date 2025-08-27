@@ -88,3 +88,7 @@ stan_code_classification <- "
 
 # compile model - this should be done outside the simulation loop
 stan_model_regression <- stan_model(model_code = stan_code_classification)
+
+# ========================== #
+# ========================== #
+# ========================== #

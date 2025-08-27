@@ -1,11 +1,10 @@
-rm(list=ls())
-set.seed(42)
+rm(list = ls(all = TRUE))
 
 # ==========================
 # Packages
 # ==========================
-devtools::install_github("MateusMaiaDS/subart")
-devtools::install_github("Seungha-Um/skewBART")
+# devtools::install_github("MateusMaiaDS/subart")
+# devtools::install_github("Seungha-Um/skewBART")
 
 library(BART)
 library(dplyr)
@@ -23,22 +22,20 @@ library(surbayes)
 
 # load & preprocess
 data("ttcm")
-data_ttcm <- ttcm
-data_ttcm <- as.data.frame(unclass(data_ttcm), stringsAsFactors = TRUE)
 standardise <- function(x) (x - mean(x)) / sd(x)
 
 X <- data.frame(
-  gender = as.integer(data_ttcm$gender) - 1,
-  age = standardise(data_ttcm$age),
-  education = data_ttcm$education,
-  disease_history = data_ttcm$disease_history,
-  trauma_type = data_ttcm$trauma_type,
-  fracture_region = data_ttcm$fracture_region,
-  ISS = standardise(data_ttcm$ISS),
-  hospital_duration = data_ttcm$hospital_duration,
-  surgery = as.integer(data_ttcm$surgery) - 1,
-  TTO = standardise(data_ttcm$TTO),
-  admission = as.integer(as.factor(data_ttcm$admission)) - 1
+  gender = as.integer(ttcm$gender) - 1,
+  age = standardise(ttcm$age),
+  education = ttcm$education,
+  disease_history = ttcm$disease_history,
+  trauma_type = ttcm$trauma_type,
+  fracture_region = ttcm$fracture_region,
+  ISS = standardise(ttcm$ISS),
+  hospital_duration = ttcm$hospital_duration,
+  surgery = as.integer(ttcm$surgery) - 1,
+  TTO = standardise(ttcm$TTO),
+  admission = as.integer(as.factor(ttcm$admission)) - 1
 )
 
 # prognostic functions and treatment effects
@@ -121,7 +118,7 @@ compute_inb <- function(df) {
 
 save_results <- function(model, i, samples, summary) {
   results_samples[[model]][[i]] <<- samples
-  results_summary[[model]][i,] <<- posterior_summary(samples)
+  results_summary[[model]][i, ] <<- posterior_summary(samples)
 }
 
 extract_deltas <- function(fit, n) {
@@ -206,8 +203,8 @@ for (i in seq_len(n_sim)) {
   # --- BayesSUR ---
   BayesSUR_fit <- sur_sample(
     formula.list = list(
-      C ~ trt + age + gender + disease_history + trauma_type + fracture_region + ISS + hospital_duration + surgery + TTO + admission,
-      Q ~ trt + age + gender + disease_history + trauma_type + fracture_region + ISS + hospital_duration + surgery + TTO + admission
+      C ~ . - C - Q,
+      Q ~ . - C - Q
     ),
     data = cbind(X_train, Y_train),
     M = n_post
@@ -255,10 +252,8 @@ for (i in seq_len(n_sim)) {
   # BayesSUR_ps
   BayesSUR_ps_fit <- sur_sample(
     formula.list = list(
-      C ~ trt + ps + age + gender + disease_history + trauma_type + fracture_region +
-        ISS + hospital_duration + surgery + TTO + admission,
-      Q ~ trt + ps + age + gender + disease_history + trauma_type + fracture_region +
-        ISS + hospital_duration + surgery + TTO + admission
+      C ~ . - C - Q,
+      Q ~ . - C - Q
     ),
     data = cbind(X_train_ps, Y_train),
     M = n_post
@@ -314,13 +309,13 @@ estimands <- list(
 # from GitHub by uncommenting the appropriate line.
 
 # For Table A.1
-#results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_0.rds")
+# results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_0.rds")
 
 # For Table A.2, Table 3, and Table 4
-#results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_-0.25.rds")
+# results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_-0.25.rds")
 
 # For Table A.3
-#results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_-0.5.rds")
+# results_summary <- readRDS("C:/Users/jes238/OneDrive - Vrije Universiteit Amsterdam/Documents/suBART/summary_causal_experiments_rho_eq_-0.5.rds")
 
 # --- build results ---
 sim_results <- do.call(rbind, lapply(names(results_summary), function(model) {
@@ -356,3 +351,7 @@ select(
 
 # Table A.1/A.2/A.3, depending on the choice of rho
 filter(sim_results, model == "suBART_ps" | model == "indBART_ps")
+
+# ========================== #
+# ========================== #
+# ========================== #

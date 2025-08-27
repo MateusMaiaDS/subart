@@ -1,21 +1,21 @@
-rm(list=ls())
-set.seed(42)
+rm(list = ls(all = TRUE))
+
 # ==========================
 # Packages
 # ==========================
-devtools::install_github("MateusMaiaDS/subart")
-devtools::install_github("Seungha-Um/skewBART")
+# devtools::install_github("MateusMaiaDS/subart")
+# devtools::install_github("Seungha-Um/skewBART")
 
+library(BART)
 library(bayesplot)
 library(dplyr)
-library(ggplot2)
-library(systemfit)
-library(gridExtra)
-library(BART)
-library(skewBART)
-library(surbayes)
-library(subart)
 library(ggdensity)
+library(ggplot2)
+library(gridExtra)
+library(skewBART)
+library(subart)
+library(surbayes)
+library(systemfit)
 
 # ==========================
 # Helper functions
@@ -60,11 +60,8 @@ plot_CE_plane <- function(post, title) {
 # Data preparation
 # ==========================
 data("ttcm")
-data_ttcm <- ttcm
-data_ttcm <- as.data.frame(unclass(data_ttcm), stringsAsFactors = TRUE)
-
-X_train <- select(data_ttcm, -one_of(c("Q", "C")))
-Y_train <- select(data_ttcm, "C", "Q")
+X_train <- select(ttcm, -one_of(c("Q", "C")))
+Y_train <- select(ttcm, "C", "Q")
 
 # Duplicate training data for testing
 X_test <- rbind(X_train, X_train)
@@ -170,8 +167,8 @@ CE_plane_mvBART_ps <- plot_CE_plane(post_mvBART_ps, "ps-mvBART")
 # BayesSUR without PS
 BayesSUR_fit <- sur_sample(
   formula.list = list(
-    C ~ trt + age + gender + disease_history + trauma_type + fracture_region + ISS + hospital_duration + surgery + TTO + admission,
-    Q ~ trt + age + gender + disease_history + trauma_type + fracture_region + ISS + hospital_duration + surgery + TTO + admission
+    C ~ . - C - Q,
+    Q ~ . - C - Q
   ),
   data = cbind(X_train, Y_train),
   M = n_post
@@ -187,8 +184,8 @@ CE_plane_BayesSUR <- plot_CE_plane(post_BayesSUR, "BayesSUR")
 # BayesSUR with PS
 BayesSUR_ps_fit <- sur_sample(
   formula.list = list(
-    C ~ ps + trt + age + gender + disease_history + trauma_type + fracture_region + ISS + hospital_duration + surgery + TTO + admission,
-    Q ~ ps + trt + age + gender + disease_history + trauma_type + fracture_region + ISS + hospital_duration + surgery + TTO + admission
+    C ~ . - C - Q,
+    Q ~ . - C - Q
   ),
   data = cbind(X_train_ps, Y_train),
   M = n_post
@@ -205,12 +202,12 @@ CE_plane_BayesSUR_ps <- plot_CE_plane(post_BayesSUR_ps, "ps-BayesSUR")
 # Cost-effectiveness planes (CEP; Figure 5)
 # ==========================
 grid.arrange(CE_plane_suBART_ps,
-             CE_plane_mvBART_ps,
-             CE_plane_BayesSUR_ps,
-             CE_plane_suBART,
-             CE_plane_mvBART,
-             CE_plane_BayesSUR,
-             nrow = 2
+  CE_plane_mvBART_ps,
+  CE_plane_BayesSUR_ps,
+  CE_plane_suBART,
+  CE_plane_mvBART,
+  CE_plane_BayesSUR,
+  nrow = 2
 )
 
 # ==========================
@@ -290,7 +287,7 @@ data_CATE$CINB20 <- 20000 * data_CATE$tau_q - data_CATE$tau_c
 plot_CATE <- function(data, x_var, y_vars, x_label = NULL) {
   plots <- lapply(y_vars, function(y_var) {
     ggplot(data) +
-      geom_point(aes_string(x = x_var, y = y_var)) +
+      geom_point(aes(!!sym(x_var), !!sym(y_var))) +
       labs(x = x_label %||% x_var, y = y_var) +
       theme_classic() +
       theme(text = element_text(size = 12))
