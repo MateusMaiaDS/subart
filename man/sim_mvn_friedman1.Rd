@@ -2,22 +2,39 @@
 % Please edit documentation in R/simulation_functions.R
 \name{sim_mvn_friedman1}
 \alias{sim_mvn_friedman1}
-\title{Simulation setting for the Regression case}
+\title{Simulation settings for the Friedman #1 regression case}
 \usage{
 sim_mvn_friedman1(n, p, mvn_dim, Sigma = NULL)
 }
 \arguments{
-\item{n}{sample size}
+\item{n}{Sample size}
 
-\item{p}{number of covariates}
+\item{p}{Number of covariates (default 10)}
 
-\item{mvn_dim}{dimension \eqn{d} for the multivariate}
+\item{mvn_dim}{Dimension \eqn{d} of the multivariate response (2 or 3)}
 
-\item{Sigma}{Sigma function, default is \code{NULL}}
+\item{Sigma}{Covariance matrix or function to generate it; default is \code{NULL}.
+Example values for d = 2: \eqn{\sigma_1 = 1, \sigma_2 = 10, \rho_{12} = 0.75};
+for d = 3: \eqn{\sigma = (1, 2.5, 5), \rho = (0.8, 0.5, 0.25)}}
 }
 \value{
-a simulated data
+A data frame with n rows, p predictor columns, and mvn_dim outcome columns
 }
 \description{
-Simulation setting for the Regression case
+This function generates data according to the Friedman #1 scenario from
+Esser et al. (2024, arXiv:2404.02228). The p = 10 predictors are generated
+independently from a uniform distribution on [0, 1]. Not all predictors are
+used in each response, but all predictors are included in the model fitting.
+}
+\details{
+The three responses are generated as:
+\deqn{
+y_1 = 10 \sin(\pi x_1 x_2) + 20(x_3 - 0.5)^2
+}
+\deqn{
+y_2 = 8 x_4 + 20 \sin(\pi x_1)
+}
+\deqn{
+y_3 = 10 x_5 - 5 x_2 - 5 x_4
+}
 }

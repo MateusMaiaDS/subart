@@ -2,22 +2,43 @@
 % Please edit documentation in R/simulation_functions.R
 \name{sim_mvn_friedman2}
 \alias{sim_mvn_friedman2}
-\title{Simulation setting for the Regression Friedman 2}
+\title{Simulation setting for the Classification case (Friedman #2)}
 \usage{
 sim_mvn_friedman2(n, p, mvn_dim, Sigma = NULL)
 }
 \arguments{
-\item{n}{sample size}
+\item{n}{Sample size}
 
-\item{p}{number of covariates}
+\item{p}{Number of covariates (default 10)}
 
-\item{mvn_dim}{dimension \eqn{d} for the multivariate}
+\item{mvn_dim}{Dimension \eqn{d} of the multivariate latent variable (2 or 3)}
 
-\item{Sigma}{Sigma function, default is \code{NULL}}
+\item{Sigma}{Covariance matrix or function to generate it; default is \code{NULL}.
+For d = 2, use \eqn{\sigma_1 = 1, \sigma_2 = 10, \rho_{12} = 0.75};
+for d = 3, \eqn{\sigma = (1, 2.5, 5), \rho = (0.8, 0.5, 0.25)}.}
 }
 \value{
-a simulated data
+A data frame with n rows, p predictor columns, and mvn_dim binary outcome columns
 }
 \description{
-Simulation setting for the Regression Friedman 2
+This function generates data according to the Friedman #2 scenario from
+Esser et al. (2024, arXiv:2404.02228). The p = 10 predictors are generated
+independently from a uniform distribution on [0, 1].
+}
+\details{
+The latent variables for each response are generated as:
+\deqn{
+z_1 = \sin(\pi x_1 x_2) + x_3^3
+}
+\deqn{
+z_2 = -1 + 2 x_1 x_4 + \exp(x_5)
+}
+\deqn{
+z_3 = 0.5(x_2 + x_4) + x_5
+}
+Correlated noise \eqn{\varepsilon_i \sim MVN_d(0, \Sigma)} is added to each
+latent variable. The binary outcomes are then obtained via the probit link function.
+
+The correlation matrix \eqn{\Sigma} can be specified according to Table 2 in
+the paper for d = 2 or d = 3. The dimension \eqn{d = 2} uses the first two responses.
 }

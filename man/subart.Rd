@@ -6,7 +6,7 @@
 \usage{
 subart(
   x_train,
-  y_mat,
+  y_train,
   x_test = NULL,
   n_tree = 100,
   node_min_size = 5,
@@ -29,7 +29,7 @@ subart(
 \arguments{
 \item{x_train}{A \code{data.frame} of the training data covariates. When \code{x_train} contains unordered categorical variables with more than two levels, the corresponding columns should be defined as factors.}
 
-\item{y_mat}{A numeric matrix of the data responses.}
+\item{y_train}{A numeric matrix of the data responses.}
 
 \item{x_test}{A \code{data.frame} of the test data covariates. If `NULL` only predictions for \code{x_train} will be used. The columns of \code{x_test} should match those of \code{x_train} in name, order and type.}
 
