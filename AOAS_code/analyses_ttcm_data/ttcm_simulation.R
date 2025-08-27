@@ -85,8 +85,6 @@ sim <- function(data_true, rho) {
 
 # ==========================
 # Make simulated datasets
-# - To replicate the results in the main paper, set rho = -0.25.
-# - To replicate the results in the supplementary material, set rho = 0/-0.25/-0.5, respectively
 # ==========================
 
 n_sim <- 1000
@@ -164,7 +162,7 @@ results_summary <- setNames(lapply(models, function(x) make_results_df(n_sim)), 
 results_samples <- list()
 
 # --- Inference loop ---
-n_post <- 2000
+n_post <- 4000
 n_burn <- 1000
 n_obs <- nrow(data_true)
 pb <- progress_bar$new(total = n_sim)
@@ -292,7 +290,7 @@ compute_metrics <- function(res, est, true) {
     sd = sd(res[[paste0(est, "_mean")]]),
     RMSE = sqrt(mean((res[[paste0(est, "_mean")]] - true)^2)),
     coverage = mean(res[[paste0(est, "_CI_lower")]] < true &
-      true < res[[paste0(est, "_CI_upper")]]),
+                      true < res[[paste0(est, "_CI_upper")]]),
     length = mean(res[[paste0(est, "_CI_upper")]] - res[[paste0(est, "_CI_lower")]])
   )
 }
@@ -304,18 +302,6 @@ estimands <- list(
   INB_20  = INB_20_true,
   INB_50  = INB_50_true
 )
-
-# If you want to avoid running the whole loop above, you can instead load the needed file
-# from GitHub by uncommenting the appropriate line.
-
-# For Table A.1
-# results_summary <- readRDS("ttcm_simulations_rho_0.rds")
-
-# For Table A.2, Table 3, and Table 4
-# results_summary <- readRDS("ttcm_simulations_rho_-0.25.rds")
-
-# For Table A.3
-# results_summary <- readRDS("ttcm_simulations_rho_-0.5.rds")
 
 # --- build results ---
 sim_results <- do.call(rbind, lapply(names(results_summary), function(model) {
