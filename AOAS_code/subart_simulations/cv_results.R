@@ -10,7 +10,7 @@ library(doParallel)
 library(dplyr)
 library(skewBART)
 library(subart)
-library(surBayes)
+library(surbayes)
 
 # -------------------------------
 # Simulation settings
@@ -18,11 +18,11 @@ library(surBayes)
 seed_ <- 43
 set.seed(seed_)
 
-n_ <- 250 # vary n_ \in {250,500,1000} to consider different scenarios in the paper
+n_ <- 100 # vary n_ \in {250,500,1000} to consider different scenarios in the paper
 p_ <- 10
 n_tree_ <- 100
-n_mcmc_ <- 5000 # See paper specifications to define
-n_burn_ <- 2000
+n_mcmc_ <- 500 # See paper specifications to define
+n_burn_ <- 200
 mvn_dim_ <- 2 # vary mvn_dim_ \in {2, 3} to consider different scenarios in the paper
 task_ <- "regression" # 'classification' or 'regression'
 sim_ <- "friedman1" # 'friedman1' or 'friedman2'
@@ -41,7 +41,7 @@ cat(
   "sim", sim_, "\n"
 )
 
-n_rep <- 100 # Set 100 as the default in the paper
+n_rep <- 1 # Set 100 as the default in the paper
 cv_ <- vector("list", length = n_rep)
 
 # -------------------------------
@@ -49,8 +49,7 @@ cv_ <- vector("list", length = n_rep)
 # -------------------------------
 sim_fun <- switch(paste(task_, sim_, sep = "_"),
   "regression_friedman1" = subart::sim_mvn_friedman1,
-  "regression_friedman2" = subart::sim_mvn_friedman2,
-  "classification_friedman1" = subart::sim_class_mvn_friedman1,
+  "classification_friedman1" = subart::sim_mvn_friedman1,
   stop("Insert a valid task and simulation")
 )
 
@@ -73,7 +72,7 @@ if (model == "BayesSUR" & task_ == "classification") {
 # -------------------------------
 # Directory to save results
 # -------------------------------
-path <- "/subart_simulations/"
+path <- "inst/"
 if (!(file.exists(path) && file.info(path)$isdir)) {
   stop("Insert a valid directory path to save the models")
 }
@@ -81,7 +80,7 @@ if (!(file.exists(path) && file.info(path)$isdir)) {
 # -------------------------------
 # Run models in parallel
 # -------------------------------
-result <- foreach(i = 1:n_rep, .packages = c("dbarts", "dplyr", "skewBART", "subart", "surBayes")) %dopar% {
+result <- foreach(i = 1:n_rep, .packages = c("dbarts", "dplyr", "skewBART", "subart", "surbayes")) %dopar% {
   source("subart_simulations/cv_functions.R")
 
   aux <- switch(model,

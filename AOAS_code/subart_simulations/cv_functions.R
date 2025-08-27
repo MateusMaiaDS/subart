@@ -5,7 +5,7 @@ library(rstan)
 library(scoringRules)
 library(skewBART)
 library(subart)
-library(surBayes)
+library(surbayes)
 library(systemfit)
 
 # -------------------------------
@@ -436,7 +436,7 @@ cv_matrix_BayesSUR <- function(cv_element_,
     })
 
     # Fit Bayesian SUR
-    sur_mod <- surBayes::sur_sample(
+    sur_mod <- surbayes::sur_sample(
       formula.list = eqSystem,
       data = train_data,
       M = (n_mcmc_ - n_burn_)
