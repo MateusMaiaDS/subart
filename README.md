@@ -13,17 +13,15 @@ devtools::install_github("MateusMaiaDS/subart")
 
 # References
 
-For a complete description of the **`subart`** model, please refer to the accepted manuscript:
+For a full description of the **`subart`** methodology, see the accepted article:
 
-*Seemingly Unrelated Bayesian Additive Regression Trees for Cost-Effectiveness Analyses in Healthcare*
-by **Jonas Esser**, **Mateus Maia**, **Andrew C. Parnell**, **Judith Bosmans**, **Hanneke van Dongen**, **Thomas Klausch**, and **Keefe Murphy**.
+**Esser, Maia, Parnell, Bosmans, van Dongen, Klausch & Murphy.**
+*Seemingly Unrelated Bayesian Additive Regression Trees for Cost-Effectiveness Analyses in Healthcare.*
+**Annals of Applied Statistics** (in press).
+Pre-publication version: [https://www.e-publications.org/ims/submission/AOAS/user/submissionFile/65318?confirm=80d9c4b7](https://www.e-publications.org/ims/submission/AOAS/user/submissionFile/65318?confirm=80d9c4b7)
 
-The paper will appear in an upcoming issue of the [*Annals of Applied Statistics* (AOAS)](https://imstat.org/journals-and-publications/annals-of-applied-statistics/).
-A pre-publication version of the manuscript can be downloaded [here](https://www.e-publications.org/ims/submission/AOAS/user/submissionFile/65318?confirm=80d9c4b7).
+For a practical introduction to applying **`subart`** in cost-effectiveness analyses with observational data, see:
 
-For a practical tutorial on using **`subart`** in the context of cost-effectiveness analyses with observational data, we recommend the article:
-**Jonas Esser**, **Mateus Maia**, **Judith Bosmans**, **Johanna van Dongen**
-
-*Nonparametric regression for cost-effectiveness analyses with observational data — a tutorial*,
-
-which is available on arXiv at this [link](https://arxiv.org/abs/2507.03511).
+**Esser, Maia, Bosmans & van Dongen.**
+*Nonparametric Regression for Cost-Effectiveness Analyses with Observational Data — A Tutorial.*
+arXiv: [https://arxiv.org/abs/2507.03511](https://arxiv.org/abs/2507.03511)
