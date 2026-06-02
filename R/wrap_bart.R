@@ -575,11 +575,11 @@ subart <- function(x_train,
           }
 
           # Calculate the ESS for all parameters throw a warning if any of them is smaller than half of the MCMC samples
+          ESS_warn <- FALSE
           if(diagnostic){
 
                diagnostic_bool = FALSE
                ESS_val <- matrix(NA, nrow = nrow(Sigma_post), ncol = ncol(Sigma_post))
-               ESS_warn <- FALSE
                for(i in 1:nrow(Sigma_post)){
                     # ESS_val[i,i] <- ESS(x = Sigma_post[i,i,]) # For classification there's no sample
                     j = i
@@ -659,11 +659,11 @@ subart <- function(x_train,
           }
 
           # Calculate the ESS for all parameters throw a warning if any of them is smaller than half of the MCMC samples
+          ESS_warn <- FALSE
           if(diagnostic){
 
                diagnostic_bool = FALSE
                ESS_val <- matrix(NA, nrow = nrow(Sigma_post), ncol = ncol(Sigma_post))
-               ESS_warn <- FALSE
                for(i in 1:nrow(Sigma_post)){
                     ESS_val[i,i] <- ESS(x = sqrt(Sigma_post[i,i,]))
                     j = i
